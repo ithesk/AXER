@@ -15,9 +15,11 @@ export default async function EntradasPage() {
           <Button asChild variant="outline">
             <Link href="/dashboard/entradas/seed">Poblar Datos</Link>
           </Button>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Registrar Entrada
+          <Button asChild>
+            <Link href="/dashboard/entradas/registrar">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Registrar Entrada
+            </Link>
           </Button>
         </div>
       </PageHeader>
