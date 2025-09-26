@@ -14,7 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
                         <Link href="/dashboard" className="flex items-center gap-2 font-semibold font-headline">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary"><path d="M4 17a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4Z"/><path d="M12 7V5"/><path d="M7 7V5"/><path d="M17 7V5"/></svg>
-                            <span className="">TelcoStore</span>
+                            <span className="">AXER</span>
                         </Link>
                     </div>
                     <div className="flex-1 overflow-auto py-2">
@@ -38,7 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
                                <Link href="/dashboard" className="flex items-center gap-2 font-semibold font-headline">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary"><path d="M4 17a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4Z"/><path d="M12 7V5"/><path d="M7 7V5"/><path d="M17 7V5"/></svg>
-                                   <span className="">TelcoStore</span>
+                                   <span className="">AXER</span>
                                </Link>
                             </div>
                             <div className="flex-1 overflow-auto py-2">

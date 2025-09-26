@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'TelcoStore Manager',
-  description: 'Manage your phone stores with ease.',
+  title: 'AXER',
+  description: 'Gestiona tus tiendas de telefonía con facilidad.',
 };
 
 export default function RootLayout({

@@ -47,7 +47,7 @@ export default function Home() {
       <header className="px-4 lg:px-6 h-16 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <Link href="#" className="flex items-center justify-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary"><path d="M4 17a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4Z"/><path d="M12 7V5"/><path d="M7 7V5"/><path d="M17 7V5"/></svg>
-          <span className="font-bold text-lg font-headline">TelcoStore Manager</span>
+          <span className="font-bold text-lg font-headline">AXER</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Button variant="ghost" asChild>
@@ -63,10 +63,10 @@ export default function Home() {
             <div className="container px-4 md:px-6 text-center text-primary-foreground">
                 <div className="space-y-4">
                     <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl font-headline">
-                        The Future of Phone Store Management
+                        El futuro de la gestión de tiendas de telefonía
                     </h1>
                     <p className="mx-auto max-w-[700px] text-lg md:text-xl">
-                        TelcoStore Manager is your all-in-one solution for inventory, sales, employees, and customer relationships, powered by AI.
+                        AXER es su solución todo en uno para inventario, ventas, empleados y relaciones con los clientes, impulsada por IA.
                     </p>
                 </div>
                 <div className="mt-8">
@@ -109,7 +109,7 @@ export default function Home() {
         </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; 2024 TelcoStore Manager. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground">&copy; 2024 AXER. All rights reserved.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
             Terms of Service
