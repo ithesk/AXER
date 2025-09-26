@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react";
 import type { RepairStatus } from "@/services/repairs";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Circle, CircleDot } from "lucide-react";
