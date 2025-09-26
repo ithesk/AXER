@@ -23,7 +23,7 @@ const navItems = [
     { name: 'Panel', href: '/dashboard', icon: Home },
     { name: 'Inventario', href: '/dashboard/inventory', icon: Package },
     { name: 'Ventas', href: '/dashboard/sales', icon: ShoppingCart, badge: 6 },
-    { name: 'Taller', href: '/dashboard/taller', icon: Wrench },
+    { name: 'Entradas', href: '/dashboard/entradas', icon: Wrench },
     { name: 'Clientes', href: '/dashboard/customers', icon: Contact },
     { name: 'Empleados', href: '/dashboard/employees', icon: Users },
     { name: 'Alertas', href: '/dashboard/alerts', icon: Bell, badge: 2, variant: 'destructive' as const },

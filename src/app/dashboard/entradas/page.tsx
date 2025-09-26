@@ -12,10 +12,10 @@ const repairs = [
   { id: "REP-004", customer: "Mary Johnson", device: "iPhone 13 - Daño por agua", technician: "David Williams", status: "En Espera (Parte)", entryDate: "2024-05-08" },
 ];
 
-export default function WorkshopPage() {
+export default function EntradasPage() {
   return (
     <>
-      <PageHeader title="Taller" description="Gestiona todas las reparaciones y seguimientos de equipos.">
+      <PageHeader title="Entradas" description="Gestiona todas las reparaciones y seguimientos de equipos.">
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
           Registrar Entrada
