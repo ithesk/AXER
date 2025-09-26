@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageHeader } from "@/components/page-header";
-import { PlusCircle, ListFilter, Search } from "lucide-react";
+import { PlusCircle, ListFilter, Search, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -98,43 +98,58 @@ export default function EntradasPage() {
             <CardDescription>Una lista de todos los equipos actualmente en el taller.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar por cliente, equipo, estado..."
-                      className="pl-8"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <TabsList>
-                      {statusFilters.map(status => (
-                        <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
-                      ))}
-                    </TabsList>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-9 flex">
-                          <ListFilter className="mr-2 h-4 w-4" />
-                          Vista
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Mostrar/Ocultar Columnas</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuCheckboxItem checked={columnVisibility.id} onCheckedChange={() => toggleColumn('id')}>ID de Reparación</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked={columnVisibility.customer} onCheckedChange={() => toggleColumn('customer')}>Cliente</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked={columnVisibility.device} onCheckedChange={() => toggleColumn('device')}>Equipo y Falla</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked={columnVisibility.technician} onCheckedChange={() => toggleColumn('technician')}>Técnico Asignado</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked={columnVisibility.entryDate} onCheckedChange={() => toggleColumn('entryDate')}>Fecha de Ingreso</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked={columnVisibility.status} onCheckedChange={() => toggleColumn('status')}>Estado</DropdownMenuCheckboxItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por cliente, equipo, estado..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
+              <div className="flex items-center gap-2">
+                <TabsList>
+                  {statusFilters.map(status => (
+                    <TabsTrigger key={status} value={status} onClick={() => setActiveTab(status)}>{status}</TabsTrigger>
+                  ))}
+                </TabsList>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-9 flex">
+                      <ListFilter className="mr-2 h-4 w-4" />
+                      Vista
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Mostrar/Ocultar Columnas</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem checked={columnVisibility.id} onCheckedChange={() => toggleColumn('id')}>ID de Reparación</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={columnVisibility.customer} onCheckedChange={() => toggleColumn('customer')}>Cliente</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={columnVisibility.device} onCheckedChange={() => toggleColumn('device')}>Equipo y Falla</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={columnVisibility.technician} onCheckedChange={() => toggleColumn('technician')}>Técnico Asignado</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={columnVisibility.entryDate} onCheckedChange={() => toggleColumn('entryDate')}>Fecha de Ingreso</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={columnVisibility.status} onCheckedChange={() => toggleColumn('status')}>Estado</DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-9 w-9">
+                            <Settings className="h-4 w-4" />
+                            <span className="sr-only">Configuración</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Configuración del Módulo</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>Ajustes de Notificaciones</DropdownMenuItem>
+                        <DropdownMenuItem>Estados Personalizados</DropdownMenuItem>
+                        <DropdownMenuItem>Técnicos</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+          </div>
+          <Tabs value={activeTab}>
               <div className="border rounded-md mt-4">
                 <Table>
                   <TableHeader>
@@ -148,7 +163,21 @@ export default function EntradasPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {renderTableRows(filteredRepairs)}
+                    <TabsContent value="Todas" className="p-0 m-0">
+                      {renderTableRows(filteredRepairs)}
+                    </TabsContent>
+                    <TabsContent value="Pendiente" className="p-0 m-0">
+                      {renderTableRows(filteredRepairs)}
+                    </TabsContent>
+                    <TabsContent value="En Progreso" className="p-0 m-0">
+                      {renderTableRows(filteredRepairs)}
+                    </TabsContent>
+                    <TabsContent value="Completado" className="p-0 m-0">
+                      {renderTableRows(filteredRepairs)}
+                    </TabsContent>
+                     <TabsContent value="En Espera (Parte)" className="p-0 m-0">
+                      {renderTableRows(filteredRepairs)}
+                    </TabsContent>
                   </TableBody>
                 </Table>
               </div>
