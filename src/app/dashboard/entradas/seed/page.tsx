@@ -5,13 +5,60 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import type { Repair } from "@/services/repairs";
 
-const repairsData = [
-  { id: "REP-001", customer: "John Doe", device: "iPhone 14 - Pantalla rota", technician: "David Williams", status: "En Progreso", entryDate: "2024-05-10" },
-  { id: "REP-002", customer: "Jane Smith", device: "Samsung S22 - Cambio de batería", technician: "David Williams", status: "Completado", entryDate: "2024-05-09" },
-  { id: "REP-003", customer: "Peter Jones", device: "Google Pixel 7 - Problema de software", technician: "No Asignado", status: "Pendiente", entryDate: "2024-05-10" },
-  { id: "REP-004", customer: "Mary Johnson", device: "iPhone 13 - Daño por agua", technician: "David Williams", status: "En Espera (Parte)", entryDate: "2024-05-08" },
-] as const;
+const repairsData: Repair[] = [
+  { 
+    id: "REP-001", 
+    customer: "John Doe", 
+    device: "iPhone 14", 
+    technician: "David Williams", 
+    status: "En Progreso", 
+    entryDate: new Date("2024-05-10T10:00:00Z").toISOString(),
+    deviceType: "Celular",
+    problemDescription: "La pantalla está rota y no responde al tacto en la parte superior.",
+    imeiOrSn: "356712345678901",
+    password: "1234",
+    evaluation: "Requiere reemplazo completo del panel frontal. La batería parece estar en buen estado.",
+  },
+  { 
+    id: "REP-002", 
+    customer: "Jane Smith", 
+    device: "Samsung Galaxy S22", 
+    technician: "David Williams", 
+    status: "Completado", 
+    entryDate: new Date("2024-05-09T14:30:00Z").toISOString(),
+    deviceType: "Celular",
+    problemDescription: "La batería se descarga muy rápido, dura menos de 4 horas.",
+    imeiOrSn: "359876543210987",
+    evaluation: "Cambio de batería realizado. El equipo ahora mantiene la carga correctamente.",
+  },
+  { 
+    id: "REP-003", 
+    customer: "Peter Jones", 
+    device: "Google Pixel 7", 
+    technician: "No Asignado", 
+    status: "Pendiente", 
+    entryDate: new Date("2024-05-10T11:00:00Z").toISOString(),
+    deviceType: "Celular",
+    problemDescription: "El equipo se reinicia constantemente y no pasa del logo de Google.",
+    imeiOrSn: "351234567890123",
+    password: "No tiene",
+    evaluation: "Pendiente de diagnóstico. Posible fallo de software o placa base.",
+  },
+  { 
+    id: "REP-004", 
+    customer: "Mary Johnson", 
+    device: "MacBook Pro 14\"", 
+    technician: "David Williams", 
+    status: "En Espera (Parte)", 
+    entryDate: new Date("2024-05-08T18:00:00Z").toISOString(),
+    deviceType: "Laptop",
+    problemDescription: "El teclado no funciona después de un derrame de líquido.",
+    imeiOrSn: "C02G1234H8J1",
+    evaluation: "Necesita cambio de Top Case. Se ha solicitado la pieza.",
+  },
+];
 
 
 export default function SeedPage() {
@@ -20,7 +67,7 @@ export default function SeedPage() {
 
     const handleSeed = async () => {
         try {
-            await seedRepairs([...repairsData]);
+            await seedRepairs(repairsData);
             toast({
                 title: "Éxito",
                 description: "La base de datos ha sido poblada con datos de ejemplo.",

@@ -4,10 +4,15 @@ import { collection, getDocs, doc, setDoc, writeBatch, getDoc } from "firebase/f
 export type Repair = {
     id: string;
     customer: string;
-    device: string;
+    device: string; // This will now be the product to repair, e.g., "iPhone 14"
     technician: string;
     status: "En Progreso" | "Completado" | "Pendiente" | "En Espera (Parte)";
-    entryDate: string;
+    entryDate: string; // Should be in a format that can include time, e.g., ISO string
+    deviceType: 'Tablet' | 'Celular' | 'Reloj' | 'Laptop';
+    problemDescription: string;
+    imeiOrSn: string;
+    password?: string;
+    evaluation?: string;
 };
 
 export async function getRepairs(): Promise<Repair[]> {
