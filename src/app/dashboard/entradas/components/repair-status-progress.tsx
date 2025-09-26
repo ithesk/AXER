@@ -1,8 +1,8 @@
 "use client"
 
-import { Progress } from "@/components/ui/progress";
 import type { RepairStatus } from "@/services/repairs";
 import { cn } from "@/lib/utils";
+import { CheckCircle2, Circle, CircleDot } from "lucide-react";
 
 const repairStatuses: RepairStatus[] = ["Cotización", "Confirmado", "En Reparación", "Reparado", "Entregado"];
 
@@ -12,26 +12,42 @@ interface RepairStatusProgressProps {
 
 export default function RepairStatusProgress({ currentStatus }: RepairStatusProgressProps) {
     const currentIndex = repairStatuses.indexOf(currentStatus);
-    const progressValue = (currentIndex + 1) / repairStatuses.length * 100;
 
     return (
-        <div className="w-full">
-            <Progress value={progressValue} className="h-2" />
-            <div className="mt-4 grid grid-cols-5 gap-x-2 text-center text-xs text-muted-foreground">
-                {repairStatuses.map((status, index) => (
-                    <div key={status} className="flex flex-col items-center">
-                        <div className={cn(
-                            "w-full h-1 rounded-full mb-2",
-                            index <= currentIndex ? "bg-primary" : "bg-muted"
-                        )}></div>
-                        <span className={cn(
-                            "font-medium",
-                            index <= currentIndex && "text-primary"
-                        )}>
-                            {status}
-                        </span>
-                    </div>
-                ))}
+        <div className="w-full py-4">
+            <div className="flex items-center">
+                {repairStatuses.map((status, index) => {
+                    const isCompleted = index < currentIndex;
+                    const isActive = index === currentIndex;
+
+                    return (
+                        <React.Fragment key={status}>
+                            <div className="flex flex-col items-center">
+                                <div className="flex items-center gap-2">
+                                     {isCompleted ? (
+                                        <CheckCircle2 className="h-6 w-6 text-primary" />
+                                    ) : isActive ? (
+                                        <CircleDot className="h-6 w-6 text-primary" />
+                                    ) : (
+                                        <Circle className="h-6 w-6 text-muted-foreground/60" />
+                                    )}
+                                </div>
+                                <p className={cn(
+                                    "text-xs mt-2 text-center",
+                                    isActive ? "font-bold text-primary" : "text-muted-foreground",
+                                    isCompleted && "text-foreground"
+                                )}>{status}</p>
+                            </div>
+
+                            {index < repairStatuses.length - 1 && (
+                                <div className={cn(
+                                    "flex-1 h-1 mx-2",
+                                    isCompleted || isActive ? "bg-primary" : "bg-muted"
+                                )}></div>
+                            )}
+                        </React.Fragment>
+                    );
+                })}
             </div>
         </div>
     );
