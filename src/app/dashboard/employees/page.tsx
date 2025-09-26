@@ -5,32 +5,32 @@ import { PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const schedule = {
-  "Monday": [
-    { name: "John Doe", role: "Sales Associate", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
-    { name: "Peter Jones", role: "Manager", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar3/40/40" },
+  "Lunes": [
+    { name: "John Doe", role: "Asociado de Ventas", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
+    { name: "Peter Jones", role: "Gerente", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar3/40/40" },
   ],
-  "Tuesday": [
-    { name: "Jane Smith", role: "Sales Associate", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar2/40/40" },
-    { name: "David Williams", role: "Technician", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar4/40/40" },
+  "Martes": [
+    { name: "Jane Smith", role: "Asociado de Ventas", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar2/40/40" },
+    { name: "David Williams", role: "Técnico", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar4/40/40" },
   ],
-  "Wednesday": [
-    { name: "John Doe", role: "Sales Associate", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
-     { name: "Mary Johnson", role: "Sales Associate", time: "12pm - 8pm", avatar: "https://picsum.photos/seed/avatar5/40/40" },
+  "Miércoles": [
+    { name: "John Doe", role: "Asociado de Ventas", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
+     { name: "Mary Johnson", role: "Asociado de Ventas", time: "12pm - 8pm", avatar: "https://picsum.photos/seed/avatar5/40/40" },
   ],
-  "Thursday": [
-     { name: "Jane Smith", role: "Sales Associate", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar2/40/40" },
-    { name: "Peter Jones", role: "Manager", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar3/40/40" },
+  "Jueves": [
+     { name: "Jane Smith", role: "Asociado de Ventas", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar2/40/40" },
+    { name: "Peter Jones", role: "Gerente", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar3/40/40" },
   ],
-  "Friday": [
-    { name: "John Doe", role: "Sales Associate", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
-    { name: "David Williams", role: "Technician", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar4/40/40" },
-    { name: "Mary Johnson", role: "Sales Associate", time: "12pm - 8pm", avatar: "https://picsum.photos/seed/avatar5/40/40" },
+  "Viernes": [
+    { name: "John Doe", role: "Asociado de Ventas", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
+    { name: "David Williams", role: "Técnico", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar4/40/40" },
+    { name: "Mary Johnson", role: "Asociado de Ventas", time: "12pm - 8pm", avatar: "https://picsum.photos/seed/avatar5/40/40" },
   ],
-  "Saturday": [
-    { name: "Jane Smith", role: "Sales Associate", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar2/40/40" },
-    { name: "Mary Johnson", role: "Sales Associate", time: "12pm - 8pm", avatar: "https://picsum.photos/seed/avatar5/40/40" },
+  "Sábado": [
+    { name: "Jane Smith", role: "Asociado de Ventas", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar2/40/40" },
+    { name: "Mary Johnson", role: "Asociado de Ventas", time: "12pm - 8pm", avatar: "https://picsum.photos/seed/avatar5/40/40" },
   ],
-  "Sunday": [],
+  "Domingo": [],
 };
 
 type Day = keyof typeof schedule;
@@ -38,16 +38,16 @@ type Day = keyof typeof schedule;
 export default function EmployeesPage() {
   return (
     <>
-      <PageHeader title="Employee Schedules" description="Manage staff schedules and assignments for the week.">
+      <PageHeader title="Horarios de Empleados" description="Gestiona los horarios y asignaciones del personal para la semana.">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon"><ChevronLeft className="h-4 w-4" /></Button>
-            <span className="font-medium text-sm">May 20 - 26, 2024</span>
+            <span className="font-medium text-sm">20 - 26 de Mayo, 2024</span>
             <Button variant="outline" size="icon"><ChevronRight className="h-4 w-4" /></Button>
           </div>
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add Shift
+            Añadir Turno
           </Button>
         </div>
       </PageHeader>
@@ -71,7 +71,7 @@ export default function EmployeesPage() {
                   </div>
                 </div>
               )) : (
-                 <p className="text-sm text-muted-foreground">No shifts scheduled.</p>
+                 <p className="text-sm text-muted-foreground">No hay turnos programados.</p>
               )}
             </CardContent>
           </Card>

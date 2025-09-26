@@ -18,7 +18,7 @@ export default function PredictNeedsForm({ customerData, purchaseHistory }: Pred
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
 
-    const storeDetails = "Our store is located in a busy downtown area. We are currently running a promotion on phone accessories: buy one, get one 50% off. Popular items include the latest iPhone and Samsung models, as well as fast chargers and protective cases.";
+    const storeDetails = "Nuestra tienda está ubicada en una concurrida zona céntrica. Actualmente tenemos una promoción en accesorios para teléfonos: compre uno y llévese el segundo con un 50% de descuento. Los artículos populares incluyen los últimos modelos de iPhone y Samsung, así como cargadores rápidos y fundas protectoras.";
 
     const handlePrediction = async () => {
         setLoading(true);
@@ -31,10 +31,10 @@ export default function PredictNeedsForm({ customerData, purchaseHistory }: Pred
             });
             setPrediction(result);
         } catch (error) {
-            console.error("Prediction failed:", error);
+            console.error("La predicción falló:", error);
             toast({
-                title: "Prediction Failed",
-                description: "There was an error generating customer needs predictions. Please try again.",
+                title: "Predicción Fallida",
+                description: "Hubo un error al generar las predicciones de las necesidades del cliente. Por favor, inténtelo de nuevo.",
                 variant: "destructive",
             });
         } finally {
@@ -48,15 +48,15 @@ export default function PredictNeedsForm({ customerData, purchaseHistory }: Pred
                 <CardHeader>
                     <div className="flex items-center gap-2">
                          <BrainCircuit className="h-6 w-6 text-primary" />
-                        <CardTitle className="font-headline">AI-Powered Customer Insights</CardTitle>
+                        <CardTitle className="font-headline">Información del Cliente con IA</CardTitle>
                     </div>
                     <CardDescription>
-                        Use generative AI to analyze this customer's data and predict their future needs.
+                        Utilice IA generativa para analizar los datos de este cliente y predecir sus necesidades futuras.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Button onClick={handlePrediction} disabled={loading}>
-                        {loading ? 'Analyzing...' : 'Predict Customer Needs'}
+                        {loading ? 'Analizando...' : 'Predecir Necesidades del Cliente'}
                     </Button>
                 </CardContent>
             </Card>
@@ -65,7 +65,7 @@ export default function PredictNeedsForm({ customerData, purchaseHistory }: Pred
                 <div className="grid md:grid-cols-2 gap-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 font-headline"><Lightbulb className="h-5 w-5"/> Predicted Needs</CardTitle>
+                            <CardTitle className="flex items-center gap-2 font-headline"><Lightbulb className="h-5 w-5"/> Necesidades Previstas</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <Skeleton className="h-4 w-full" />
@@ -75,7 +75,7 @@ export default function PredictNeedsForm({ customerData, purchaseHistory }: Pred
                     </Card>
                     <Card>
                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2 font-headline"><Sparkles className="h-5 w-5"/> Recommendations</CardTitle>
+                            <CardTitle className="flex items-center gap-2 font-headline"><Sparkles className="h-5 w-5"/> Recomendaciones</CardTitle>
                         </CardHeader>
                          <CardContent className="space-y-4">
                             <Skeleton className="h-4 w-full" />
@@ -90,7 +90,7 @@ export default function PredictNeedsForm({ customerData, purchaseHistory }: Pred
                 <div className="grid md:grid-cols-2 gap-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 font-headline"><Lightbulb className="h-5 w-5 text-yellow-400"/> Predicted Needs</CardTitle>
+                            <CardTitle className="flex items-center gap-2 font-headline"><Lightbulb className="h-5 w-5 text-yellow-400"/> Necesidades Previstas</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-muted-foreground">{prediction.predictedNeeds}</p>
@@ -98,7 +98,7 @@ export default function PredictNeedsForm({ customerData, purchaseHistory }: Pred
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 font-headline"><Sparkles className="h-5 w-5 text-accent"/> Recommendations</CardTitle>
+                            <CardTitle className="flex items-center gap-2 font-headline"><Sparkles className="h-5 w-5 text-accent"/> Recomendaciones</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-muted-foreground">{prediction.recommendations}</p>

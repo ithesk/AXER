@@ -17,42 +17,42 @@ const customer = {
 
 const purchaseHistory = [
   { id: "SALE-001", date: "2024-05-01", device: "iPhone 15 Pro", total: 999.00 },
-  { id: "TRD-001", date: "2024-05-01", device: "iPhone 13 Pro (Trade-in)", total: -450.00 },
-  { id: "ACC-012", date: "2024-05-01", device: "Phone Case & Screen Protector", total: 79.99 },
+  { id: "TRD-001", date: "2024-05-01", device: "iPhone 13 Pro (Canje)", total: -450.00 },
+  { id: "ACC-012", date: "2024-05-01", device: "Funda y Protector de Pantalla", total: 79.99 },
   { id: "ACC-005", date: "2023-08-20", device: "AirPods Pro", total: 249.00 },
 ];
 
 export default function CustomerDetailPage({ params }: { params: { id: string } }) {
   const customerData = `
-    Name: ${customer.name},
+    Nombre: ${customer.name},
     Email: ${customer.email},
-    Phone: ${customer.phone},
-    Company Affiliation: ${customer.company},
-    Member Since: ${customer.signedUp}
+    Teléfono: ${customer.phone},
+    Afiliación de la empresa: ${customer.company},
+    Miembro desde: ${customer.signedUp}
   `;
 
   const purchaseHistoryData = purchaseHistory.map(p => 
-    `Date: ${p.date}, Item: ${p.device}, Amount: $${p.total.toFixed(2)}`
+    `Fecha: ${p.date}, Artículo: ${p.device}, Cantidad: $${p.total.toFixed(2)}`
   ).join('; ');
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={customer.name} description={`Customer ID: ${params.id}`} />
+      <PageHeader title={customer.name} description={`ID de Cliente: ${params.id}`} />
       
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 grid gap-6">
            <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Purchase History</CardTitle>
+              <CardTitle className="font-headline">Historial de Compras</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Transaction ID</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Details</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>ID de Transacción</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Detalles</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -83,15 +83,15 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             <CardContent className="text-sm">
                 <div className="grid gap-2">
                     <div className="flex justify-between">
-                        <span className="text-muted-foreground">Phone</span>
+                        <span className="text-muted-foreground">Teléfono</span>
                         <span>{customer.phone}</span>
                     </div>
                     <div className="flex justify-between">
-                        <span className="text-muted-foreground">Company</span>
+                        <span className="text-muted-foreground">Empresa</span>
                         <span>{customer.company}</span>
                     </div>
                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Member Since</span>
+                        <span className="text-muted-foreground">Miembro Desde</span>
                         <span>{customer.signedUp}</span>
                     </div>
                 </div>

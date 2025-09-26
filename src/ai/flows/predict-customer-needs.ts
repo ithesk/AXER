@@ -1,11 +1,11 @@
 'use server';
 
 /**
- * @fileOverview Uses generative AI to analyze customer data and purchase history to predict customer needs.
+ * @fileOverview Utiliza IA generativa para analizar datos de clientes e historial de compras para predecir las necesidades del cliente.
  *
- * - predictCustomerNeeds - A function that handles the prediction of customer needs.
- * - PredictCustomerNeedsInput - The input type for the predictCustomerNeeds function.
- * - PredictCustomerNeedsOutput - The return type for the predictCustomerNeeds function.
+ * - predictCustomerNeeds - Una función que maneja la predicción de las necesidades del cliente.
+ * - PredictCustomerNeedsInput - El tipo de entrada para la función predictCustomerNeeds.
+ * - PredictCustomerNeedsOutput - El tipo de retorno para la función predictCustomerNeeds.
  */
 
 import {ai} from '@/ai/genkit';
@@ -14,23 +14,23 @@ import {z} from 'genkit';
 const PredictCustomerNeedsInputSchema = z.object({
   customerData: z
     .string()
-    .describe('Detailed information about the customer, including demographics and contact information.'),
+    .describe('Información detallada sobre el cliente, incluidos datos demográficos e información de contacto.'),
   purchaseHistory: z
     .string()
-    .describe('A detailed history of the customer\'s purchases, including dates, items, and amounts.'),
+    .describe('Un historial detallado de las compras del cliente, que incluye fechas, artículos y montos.'),
   storeDetails: z
     .string()
-    .describe('Details about the store, such as location, popular items, and current promotions.'),
+    .describe('Detalles sobre la tienda, como ubicación, artículos populares y promociones actuales.'),
 });
 export type PredictCustomerNeedsInput = z.infer<typeof PredictCustomerNeedsInputSchema>;
 
 const PredictCustomerNeedsOutputSchema = z.object({
   predictedNeeds: z
     .string()
-    .describe('A prediction of the customer\'s future needs and potential purchases.'),
+    .describe('Una predicción de las necesidades futuras y posibles compras del cliente.'),
   recommendations: z
     .string()
-    .describe('Personalized recommendations for the customer based on their predicted needs.'),
+    .describe('Recomendaciones personalizadas para el cliente en función de sus necesidades previstas.'),
 });
 export type PredictCustomerNeedsOutput = z.infer<typeof PredictCustomerNeedsOutputSchema>;
 
@@ -42,19 +42,19 @@ const prompt = ai.definePrompt({
   name: 'predictCustomerNeedsPrompt',
   input: {schema: PredictCustomerNeedsInputSchema},
   output: {schema: PredictCustomerNeedsOutputSchema},
-  prompt: `You are an AI assistant designed to analyze customer data and purchase history to predict their future needs and provide personalized recommendations.
+  prompt: `Eres un asistente de IA diseñado para analizar datos de clientes e historial de compras para predecir sus necesidades futuras y ofrecer recomendaciones personalizadas.
 
-  Analyze the following customer data, purchase history, and store details to predict the customer's needs and provide relevant recommendations.
+  Analiza los siguientes datos del cliente, historial de compras y detalles de la tienda para predecir las necesidades del cliente y ofrecer recomendaciones relevantes.
 
-  Customer Data: {{{customerData}}}
-  Purchase History: {{{purchaseHistory}}}
-  Store Details: {{{storeDetails}}}
+  Datos del Cliente: {{{customerData}}}
+  Historial de Compras: {{{purchaseHistory}}}
+  Detalles de la Tienda: {{{storeDetails}}}
 
-  Based on this information, predict what the customer might need in the future and what products or services you would recommend to them.
+  Basado en esta información, predice lo que el cliente podría necesitar en el futuro y qué productos o servicios le recomendarías.
 
-  Format your response as follows:
-  Predicted Needs: [A detailed prediction of the customer's future needs]
-  Recommendations: [A list of personalized recommendations for the customer]`,
+  Formatea tu respuesta de la siguiente manera:
+  Necesidades Previstas: [Una predicción detallada de las necesidades futuras del cliente]
+  Recomendaciones: [Una lista de recomendaciones personalizadas para el cliente]`,
 });
 
 const predictCustomerNeedsFlow = ai.defineFlow(

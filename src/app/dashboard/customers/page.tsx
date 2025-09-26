@@ -18,27 +18,27 @@ const customers = [
 export default function CustomersPage() {
   return (
     <>
-      <PageHeader title="Customers" description="Manage your customer base and view their history.">
+      <PageHeader title="Clientes" description="Gestiona tu base de clientes y consulta su historial.">
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Customer
+          Añadir Cliente
         </Button>
       </PageHeader>
       <Card>
         <CardHeader>
-          <CardTitle>Customer List</CardTitle>
-          <CardDescription>A list of all customers.</CardDescription>
+          <CardTitle>Lista de Clientes</CardTitle>
+          <CardDescription>Una lista de todos los clientes.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Last Purchase</TableHead>
+                <TableHead>Empresa</TableHead>
+                <TableHead>Última Compra</TableHead>
                 <TableHead>
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">Acciones</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -60,10 +60,10 @@ export default function CustomersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem asChild><Link href={`/dashboard/customers/${customer.id}`}>View details</Link></DropdownMenuItem>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                        <DropdownMenuItem asChild><Link href={`/dashboard/customers/${customer.id}`}>Ver detalles</Link></DropdownMenuItem>
+                        <DropdownMenuItem>Editar</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">Eliminar</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -74,7 +74,7 @@ export default function CustomersPage() {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Showing <strong>1-5</strong> of <strong>{customers.length}</strong> customers
+            Mostrando <strong>1-5</strong> de <strong>{customers.length}</strong> clientes
           </div>
         </CardFooter>
       </Card>

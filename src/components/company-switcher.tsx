@@ -16,13 +16,13 @@ export function CompanySwitcher() {
       <SelectTrigger className="w-full">
         <div className="flex items-center gap-2">
             <Building className="h-4 w-4" />
-            <SelectValue placeholder="Select a company" />
+            <SelectValue placeholder="Selecciona una empresa" />
         </div>
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="acme-inc">Acme Inc.</SelectItem>
-        <SelectItem value="globex-corp">Globex Corporation</SelectItem>
-        <SelectItem value="stark-industries">Stark Industries</SelectItem>
+        <SelectItem value="globex-corp">Corporación Globex</SelectItem>
+        <SelectItem value="stark-industries">Industrias Stark</SelectItem>
       </SelectContent>
     </Select>
   );

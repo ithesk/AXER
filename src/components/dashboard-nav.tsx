@@ -19,13 +19,13 @@ import type { LucideIcon } from "lucide-react";
 import { Badge } from "./ui/badge";
 
 const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
-    { name: 'Sales', href: '/dashboard/sales', icon: ShoppingCart, badge: 6 },
-    { name: 'Customers', href: '/dashboard/customers', icon: Contact },
-    { name: 'Employees', href: '/dashboard/employees', icon: Users },
-    { name: 'Alerts', href: '/dashboard/alerts', icon: Bell, badge: 2, variant: 'destructive' as const },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    { name: 'Panel', href: '/dashboard', icon: Home },
+    { name: 'Inventario', href: '/dashboard/inventory', icon: Package },
+    { name: 'Ventas', href: '/dashboard/sales', icon: ShoppingCart, badge: 6 },
+    { name: 'Clientes', href: '/dashboard/customers', icon: Contact },
+    { name: 'Empleados', href: '/dashboard/employees', icon: Users },
+    { name: 'Alertas', href: '/dashboard/alerts', icon: Bell, badge: 2, variant: 'destructive' as const },
+    { name: 'Configuración', href: '/dashboard/settings', icon: Settings },
 ];
 
 interface DashboardNavProps {

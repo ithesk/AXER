@@ -8,33 +8,33 @@ import { placeholderImages } from "@/lib/placeholder-images";
 const features = [
   {
     icon: Package,
-    title: "Inventory Tracking",
-    description: "Monitor phone stock levels across different store locations.",
+    title: "Seguimiento de Inventario",
+    description: "Monitorea los niveles de stock de teléfonos en diferentes ubicaciones de tiendas.",
   },
   {
     icon: ShoppingCart,
-    title: "Sales Logging",
-    description: "Record and categorize sales transactions with ease.",
+    title: "Registro de Ventas",
+    description: "Registra y categoriza las transacciones de venta con facilidad.",
   },
   {
     icon: Users,
-    title: "Employee Scheduling",
-    description: "Create and manage staff schedules, assign roles, and track attendance.",
+    title: "Programación de Empleados",
+    description: "Crea y gestiona los horarios del personal, asigna roles y realiza un seguimiento de la asistencia.",
   },
   {
     icon: BrainCircuit,
-    title: "AI-Powered CRM",
-    description: "Store customer data and predict their needs with generative AI.",
+    title: "CRM con IA",
+    description: "Almacena datos de clientes y predice sus necesidades con IA generativa.",
   },
   {
     icon: BarChart,
-    title: "Reporting Dashboard",
-    description: "Visualize key metrics like sales revenue and popular products.",
+    title: "Panel de Informes",
+    description: "Visualiza métricas clave como los ingresos por ventas y los productos populares.",
   },
   {
     icon: Bell,
-    title: "Alerts and Notifications",
-    description: "Get notified about low stock, scheduling conflicts, and more.",
+    title: "Alertas y Notificaciones",
+    description: "Recibe notificaciones sobre bajo stock, conflictos de horarios y más.",
   },
 ];
 
@@ -51,10 +51,10 @@ export default function Home() {
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Button variant="ghost" asChild>
-            <Link href="/dashboard">Login</Link>
+            <Link href="/dashboard">Iniciar Sesión</Link>
           </Button>
           <Button asChild>
-            <Link href="/dashboard">Get Started</Link>
+            <Link href="/dashboard">Comenzar</Link>
           </Button>
         </nav>
       </header>
@@ -72,7 +72,7 @@ export default function Home() {
                 <div className="mt-8">
                     <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Link href="/dashboard">
-                            Explore The Dashboard
+                            Explorar el Panel
                         </Link>
                     </Button>
                 </div>
@@ -83,10 +83,10 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Core Features</div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Everything You Need to Succeed</h2>
+                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Características Principales</div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Todo lo que necesitas para triunfar</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Our platform provides a comprehensive suite of tools to streamline your operations and drive growth.
+                  Nuestra plataforma proporciona un conjunto completo de herramientas para optimizar sus operaciones e impulsar el crecimiento.
                 </p>
               </div>
             </div>
@@ -109,13 +109,13 @@ export default function Home() {
         </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; 2024 AXER. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground">&copy; 2024 AXER. Todos los derechos reservados.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            Terms of Service
+            Términos de Servicio
           </Link>
           <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            Privacy
+            Privacidad
           </Link>
         </nav>
       </footer>

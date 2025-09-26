@@ -7,42 +7,42 @@ import { PlusCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const inventory = [
-  { model: "iPhone 15 Pro", sku: "APL-15P-256", stock: 22, location: "Downtown", company: "Acme Inc.", status: "In Stock" },
-  { model: "Samsung Galaxy S24", sku: "SAM-S24-128", stock: 15, location: "Mall of America", company: "Globex Corp.", status: "In Stock" },
-  { model: "Google Pixel 8", sku: "GGL-P8-256", stock: 5, location: "Downtown", company: "Acme Inc.", status: "Low Stock" },
-  { model: "iPhone 15", sku: "APL-15-128", stock: 30, location: "Uptown", company: "Acme Inc.", status: "In Stock" },
-  { model: "Samsung Galaxy Z Fold 5", sku: "SAM-ZF5-512", stock: 0, location: "Mall of America", company: "Globex Corp.", status: "Out of Stock" },
-  { model: "OnePlus 12", sku: "ONP-12-256", stock: 8, location: "Uptown", company: "Acme Inc.", status: "In Stock" },
+  { model: "iPhone 15 Pro", sku: "APL-15P-256", stock: 22, location: "Centro", company: "Acme Inc.", status: "En Stock" },
+  { model: "Samsung Galaxy S24", sku: "SAM-S24-128", stock: 15, location: "Mall of America", company: "Globex Corp.", status: "En Stock" },
+  { model: "Google Pixel 8", sku: "GGL-P8-256", stock: 5, location: "Centro", company: "Acme Inc.", status: "Stock Bajo" },
+  { model: "iPhone 15", sku: "APL-15-128", stock: 30, location: "Uptown", company: "Acme Inc.", status: "En Stock" },
+  { model: "Samsung Galaxy Z Fold 5", sku: "SAM-ZF5-512", stock: 0, location: "Mall of America", company: "Globex Corp.", status: "Agotado" },
+  { model: "OnePlus 12", sku: "ONP-12-256", stock: 8, location: "Uptown", company: "Acme Inc.", status: "En Stock" },
 ];
 
 export default function InventoryPage() {
   return (
     <>
-      <PageHeader title="Inventory" description="Manage your product stock across all locations.">
+      <PageHeader title="Inventario" description="Gestiona el stock de tus productos en todas las ubicaciones.">
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Product
+          Añadir Producto
         </Button>
       </PageHeader>
       <Card>
         <CardHeader>
-          <CardTitle>Products</CardTitle>
-          <CardDescription>A list of all products in your inventory.</CardDescription>
+          <CardTitle>Productos</CardTitle>
+          <CardDescription>Una lista de todos los productos en tu inventario.</CardDescription>
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search products..." className="pl-8" />
+            <Input placeholder="Buscar productos..." className="pl-8" />
           </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Model</TableHead>
+                <TableHead>Modelo</TableHead>
                 <TableHead>SKU</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Estado</TableHead>
                 <TableHead>Stock</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Company</TableHead>
+                <TableHead>Ubicación</TableHead>
+                <TableHead>Empresa</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -51,7 +51,7 @@ export default function InventoryPage() {
                   <TableCell className="font-medium">{item.model}</TableCell>
                   <TableCell>{item.sku}</TableCell>
                   <TableCell>
-                    <Badge variant={item.status === 'Out of Stock' ? 'destructive' : item.status === 'Low Stock' ? 'secondary' : 'default'}>
+                    <Badge variant={item.status === 'Agotado' ? 'destructive' : item.status === 'Stock Bajo' ? 'secondary' : 'default'}>
                       {item.status}
                     </Badge>
                   </TableCell>
@@ -65,7 +65,7 @@ export default function InventoryPage() {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Showing <strong>1-6</strong> of <strong>{inventory.length}</strong> products
+            Mostrando <strong>1-6</strong> de <strong>{inventory.length}</strong> productos
           </div>
         </CardFooter>
       </Card>
