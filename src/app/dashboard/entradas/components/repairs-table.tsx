@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuChe
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Repair } from "@/services/repairs";
+import { useRouter } from "next/navigation";
 
 type ColumnVisibility = {
   id: boolean;
@@ -37,6 +38,8 @@ export default function RepairsTable({ repairs: repairsData }: RepairsTableProps
     entryDate: true,
     status: true,
   });
+  const router = useRouter();
+
 
   const toggleColumn = (column: keyof ColumnVisibility) => {
     setColumnVisibility(prev => ({...prev, [column]: !prev[column]}));
@@ -61,7 +64,11 @@ export default function RepairsTable({ repairs: repairsData }: RepairsTableProps
       );
     }
     return repairs.map((repair) => (
-      <TableRow key={repair.id}>
+      <TableRow 
+        key={repair.id} 
+        onClick={() => router.push(`/dashboard/entradas/${repair.id}`)}
+        className="cursor-pointer"
+      >
         {columnVisibility.id && <TableCell className="font-medium">{repair.id}</TableCell>}
         {columnVisibility.customer && <TableCell>{repair.customer}</TableCell>}
         {columnVisibility.device && <TableCell>{repair.device}</TableCell>}
@@ -87,7 +94,7 @@ export default function RepairsTable({ repairs: repairsData }: RepairsTableProps
           <CardDescription>Una lista de todos los equipos actualmente en el taller.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <div className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -99,11 +106,13 @@ export default function RepairsTable({ repairs: repairsData }: RepairsTableProps
                 />
               </div>
               <div className="flex items-center gap-2">
-                <TabsList>
-                  {statusFilters.map(status => (
-                    <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
-                  ))}
-                </TabsList>
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList>
+                    {statusFilters.map(status => (
+                      <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="h-9 flex">
@@ -158,7 +167,7 @@ export default function RepairsTable({ repairs: repairsData }: RepairsTableProps
             </Table>
           </div>
 
-        </Tabs>
+        </div>
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
