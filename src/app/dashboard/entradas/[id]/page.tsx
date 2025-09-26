@@ -34,30 +34,22 @@ export default async function RepairDetailPage({ params }: { params: { id: strin
         </CardContent>
       </Card>
       
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 grid gap-6">
-           <Card>
-            <CardHeader>
-              <CardTitle className="font-headline flex items-center gap-2"><FileText className="h-5 w-5" /> Descripción del Problema</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground">{repair.problemDescription}</p>
-            </CardContent>
-          </Card>
-           <Card>
-            <CardHeader>
-              <CardTitle className="font-headline flex items-center gap-2"><ClipboardPenLine className="h-5 w-5" /> Evaluación Técnica</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground">{repair.evaluation || "Pendiente de evaluación."}</p>
-            </CardContent>
-          </Card>
+           <div className="grid gap-2">
+            <h2 className="text-xl font-bold font-headline flex items-center gap-2"><FileText className="h-5 w-5" /> Descripción del Problema</h2>
+            <p className="text-muted-foreground">{repair.problemDescription}</p>
+          </div>
+           <div className="grid gap-2">
+            <h2 className="text-xl font-bold font-headline flex items-center gap-2"><ClipboardPenLine className="h-5 w-5" /> Evaluación Técnica</h2>
+            <p className="text-muted-foreground">{repair.evaluation || "Pendiente de evaluación."}</p>
+          </div>
         </div>
 
         <div className="grid gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Información General</CardTitle>
+              <CardTitle className="font-headline">Información del Equipo</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 text-sm">
                 <div className="flex items-center gap-3">
@@ -81,13 +73,7 @@ export default async function RepairDetailPage({ params }: { params: { id: strin
                         <p className="font-medium">{new Date(repair.entryDate).toLocaleString()}</p>
                     </div>
                 </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-headline">Detalles del Equipo</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 text-sm">
+                <hr className="my-2" />
                 <div className="flex items-center gap-3">
                     <Smartphone className="h-5 w-5 text-muted-foreground" />
                     <div>
@@ -102,11 +88,11 @@ export default async function RepairDetailPage({ params }: { params: { id: strin
                         <p className="font-medium">{repair.deviceType}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <p className="text-muted-foreground font-mono text-xs w-10">S/N</p>
+                <div className="flex items-start gap-3">
+                    <p className="text-muted-foreground font-mono text-xs w-5 flex-shrink-0 mt-1">S/N</p>
                     <div>
                         <p className="text-muted-foreground">IMEI o Número de Serie</p>
-                        <p className="font-medium font-mono">{repair.imeiOrSn}</p>
+                        <p className="font-medium font-mono break-all">{repair.imeiOrSn}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
