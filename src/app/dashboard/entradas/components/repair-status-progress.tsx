@@ -43,7 +43,7 @@ export default function RepairStatusProgress({ currentStatus }: RepairStatusProg
                             {index < repairStatuses.length - 1 && (
                                 <div className={cn(
                                     "flex-1 h-1 mx-2",
-                                    isCompleted ? "bg-primary" : "bg-muted"
+                                    index < currentIndex ? "bg-primary" : "bg-muted"
                                 )}></div>
                             )}
                         </React.Fragment>
