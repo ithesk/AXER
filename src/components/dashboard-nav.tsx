@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
 import {
     Bell,
     Contact,
@@ -18,6 +17,9 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarMenuBadge } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar";
+
 
 const navItems = [
     { name: 'Panel', href: '/dashboard', icon: Home },
@@ -30,33 +32,31 @@ const navItems = [
     { name: 'Configuración', href: '/dashboard/settings', icon: Settings },
 ];
 
-interface DashboardNavProps {
-    isMobile: boolean;
-}
-
-export function DashboardNav({ isMobile }: DashboardNavProps) {
+export function DashboardNav() {
     const pathname = usePathname();
+    const { state } = useSidebar();
 
     return (
-        <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+        <SidebarMenu>
             {navItems.map((item) => (
-                <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                        pathname === item.href && "bg-muted text-primary"
-                    )}
-                >
-                    <item.icon className="h-4 w-4" />
-                    {item.name}
-                    {item.badge && (
-                        <Badge className={cn("ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full", item.variant === 'destructive' && 'bg-destructive text-destructive-foreground')}>
-                            {item.badge}
-                        </Badge>
-                    )}
-                </Link>
+                 <SidebarMenuItem key={item.name}>
+                    <SidebarMenuButton 
+                        asChild
+                        isActive={pathname === item.href}
+                        tooltip={state === 'collapsed' ? item.name : undefined}
+                    >
+                       <Link href={item.href}>
+                            <item.icon />
+                            <span>{item.name}</span>
+                             {item.badge && (
+                                <SidebarMenuBadge className={cn(item.variant === 'destructive' && 'bg-destructive text-destructive-foreground')}>
+                                    {item.badge}
+                                </SidebarMenuBadge>
+                            )}
+                       </Link>
+                    </SidebarMenuButton>
+                 </SidebarMenuItem>
             ))}
-        </nav>
+        </SidebarMenu>
     );
 }

@@ -1,54 +1,31 @@
 import Link from "next/link";
-import { Bell, Menu, Package, Home, ShoppingCart, Users, Contact, Settings } from "lucide-react";
+import { Bell, Package, Home, ShoppingCart, Users, Contact, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { UserNav } from "@/components/user-nav";
 import { CompanySwitcher } from "@/components/company-switcher";
 import { DashboardNav } from "@/components/dashboard-nav";
+import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-            <div className="hidden border-r bg-background md:block">
-                <div className="flex h-full max-h-screen flex-col gap-2">
-                    <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-                        <Link href="/dashboard" className="flex items-center gap-2 font-semibold font-headline">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary"><path d="M4 17a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4Z"/><path d="M12 7V5"/><path d="M7 7V5"/><path d="M17 7V5"/></svg>
-                            <span className="">AXER</span>
-                        </Link>
-                    </div>
-                    <div className="flex-1 overflow-auto py-2">
-                        <DashboardNav isMobile={false} />
-                    </div>
-                    <div className="mt-auto p-4 border-t">
-                        <CompanySwitcher />
-                    </div>
-                </div>
-            </div>
-            <div className="flex flex-col">
+        <SidebarProvider>
+            <Sidebar>
+                <SidebarHeader>
+                     <Link href="/dashboard" className="flex items-center gap-2 font-semibold font-headline">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary"><path d="M4 17a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4Z"/><path d="M12 7V5"/><path d="M7 7V5"/><path d="M17 7V5"/></svg>
+                        <span className="sr-only group-data-[collapsible=icon]:hidden">AXER</span>
+                    </Link>
+                </SidebarHeader>
+                <SidebarContent>
+                    <DashboardNav />
+                </SidebarContent>
+                <SidebarFooter>
+                    <CompanySwitcher />
+                </SidebarFooter>
+            </Sidebar>
+            <div className="flex flex-col flex-1">
                 <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-                                <Menu className="h-5 w-5" />
-                                <span className="sr-only">Toggle navigation menu</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="flex flex-col p-0">
-                            <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-                               <Link href="/dashboard" className="flex items-center gap-2 font-semibold font-headline">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary"><path d="M4 17a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4Z"/><path d="M12 7V5"/><path d="M7 7V5"/><path d="M17 7V5"/></svg>
-                                   <span className="">AXER</span>
-                               </Link>
-                            </div>
-                            <div className="flex-1 overflow-auto py-2">
-                                <DashboardNav isMobile={true} />
-                            </div>
-                            <div className="mt-auto p-4 border-t">
-                                <CompanySwitcher />
-                            </div>
-                        </SheetContent>
-                    </Sheet>
+                    <SidebarTrigger className="shrink-0" />
                     <div className="w-full flex-1" />
                     <Button asChild variant="ghost" size="icon" className="rounded-full">
                         <Link href="/dashboard/alerts">
@@ -62,6 +39,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {children}
                 </main>
             </div>
-        </div>
+        </SidebarProvider>
     );
 }
