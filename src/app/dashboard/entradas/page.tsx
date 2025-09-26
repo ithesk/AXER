@@ -10,7 +10,7 @@ export default async function EntradasPage() {
 
   return (
     <>
-      <PageHeader title="Entradas" description="Gestiona todas las reparaciones y seguimientos de equipos.">
+      <PageHeader title="Órdenes de Reparación" description="Gestiona todas las reparaciones y seguimientos de equipos.">
         <div className="flex items-center gap-4">
           <Button asChild variant="outline">
             <Link href="/dashboard/entradas/seed">Poblar Datos</Link>
