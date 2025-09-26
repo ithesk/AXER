@@ -129,7 +129,7 @@ export default function SettingsPage() {
             <div key={status} className="flex items-center justify-between">
               <p className="font-medium">{status}</p>
               <Select
-                value={statusSettings[status] || 'default'}
+                value={statusSettings[status]}
                 onValueChange={(value: BadgeVariant) => handleStatusChange(status, value)}
               >
                 <SelectTrigger className="w-[180px]">
@@ -137,7 +137,7 @@ export default function SettingsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {badgeVariants.map((variant) => (
-                    <SelectItem key={variant} value={variant || 'default'} className="capitalize">
+                    <SelectItem key={variant} value={variant} className="capitalize">
                       {variant}
                     </SelectItem>
                   ))}

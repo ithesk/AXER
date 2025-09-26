@@ -4,7 +4,7 @@ import type { RepairStatus } from "./repairs";
 import type { VariantProps } from "class-variance-authority";
 import type { badgeVariants } from "@/components/ui/badge";
 
-export type BadgeVariant = VariantProps<typeof badgeVariants>["variant"];
+export type BadgeVariant = Exclude<VariantProps<typeof badgeVariants>["variant"], null | undefined>;
 
 export type StatusSettings = {
     [key in RepairStatus]: BadgeVariant;
