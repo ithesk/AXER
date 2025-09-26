@@ -92,7 +92,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
         {columnVisibility.device && <TableCell>{repair.device}</TableCell>}
         {columnVisibility.problemDescription && <TableCell className="truncate max-w-xs">{repair.problemDescription}</TableCell>}
         {columnVisibility.technician && <TableCell>{repair.technician}</TableCell>}
-        {columnVisibility.entryDate && <TableCell>{new Date(repair.entryDate).toLocaleDateString()}</TableCell>}
+        {columnVisibility.entryDate && <TableCell>{repair.entryDate.split('T')[0]}</TableCell>}
         {columnVisibility.status && <TableCell>
           <Badge variant={getBadgeVariant(repair.status)}>
             {repair.status}
