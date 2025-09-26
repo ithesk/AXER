@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Repair, RepairStatus } from "@/services/repairs";
 import { useRouter } from "next/navigation";
+import { getStatusSettings, StatusSettings, BadgeVariant } from "@/services/settings";
 
 type ColumnVisibility = {
   id: boolean;
@@ -31,6 +32,7 @@ interface RepairsTableProps {
 export default function RepairsTable({ repairs: initialRepairs }: RepairsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<RepairStatus | "Todas">("Todas");
+  const [statusSettings, setStatusSettings] = useState<StatusSettings | null>(null);
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({
     id: true,
     customer: true,
@@ -41,6 +43,14 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
     status: true,
   });
   const router = useRouter();
+
+  useEffect(() => {
+    async function fetchSettings() {
+      const settings = await getStatusSettings();
+      setStatusSettings(settings);
+    }
+    fetchSettings();
+  }, []);
 
   const toggleColumn = (column: keyof ColumnVisibility) => {
     setColumnVisibility(prev => ({...prev, [column]: !prev[column]}));
@@ -54,24 +64,21 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
       )
     );
 
-  const getBadgeVariant = (status: RepairStatus) => {
-    switch (status) {
-      case "Entregado":
-        return "default";
-      case "En Reparación":
-        return "secondary";
-      case "Reparado":
-        return "secondary";
-      case "Cotización":
-        return "outline";
-      case "Confirmado":
-        return "outline";
-      default:
-        return "destructive";
-    }
+  const getBadgeVariant = (status: RepairStatus): BadgeVariant => {
+    return statusSettings ? statusSettings[status] : 'outline';
   };
 
   const renderTableRows = () => {
+    if (!statusSettings) {
+       return (
+        <TableRow>
+          <TableCell colSpan={Object.values(columnVisibility).filter(Boolean).length} className="h-24 text-center">
+            Cargando configuración...
+          </TableCell>
+        </TableRow>
+      );
+    }
+
     if (filteredRepairs.length === 0) {
       return (
         <TableRow>
