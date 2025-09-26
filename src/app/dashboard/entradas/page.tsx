@@ -54,6 +54,15 @@ export default function EntradasPage() {
     );
 
   const renderTableRows = (repairs: typeof repairsData) => {
+    if (repairs.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={Object.values(columnVisibility).filter(Boolean).length} className="h-24 text-center">
+            No se encontraron resultados.
+          </TableCell>
+        </TableRow>
+      );
+    }
     return repairs.map((repair) => (
       <TableRow key={repair.id}>
         {columnVisibility.id && <TableCell className="font-medium">{repair.id}</TableCell>}
@@ -139,18 +148,7 @@ export default function EntradasPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {statusFilters.map(status => (
-                      <TabsContent key={status} value={status} className="p-0 m-0">
-                        {renderTableRows(filteredRepairs)}
-                      </TabsContent>
-                    ))}
-                    {filteredRepairs.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={Object.values(columnVisibility).filter(Boolean).length} className="h-24 text-center">
-                          No se encontraron resultados.
-                        </TableCell>
-                      </TableRow>
-                    )}
+                    {renderTableRows(filteredRepairs)}
                   </TableBody>
                 </Table>
               </div>
