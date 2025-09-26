@@ -36,9 +36,7 @@ export default function SettingsPage() {
   }, []);
 
   const handleStatusChange = (status: RepairStatus, variant: BadgeVariant) => {
-    if (statusSettings) {
-      setStatusSettings({ ...statusSettings, [status]: variant });
-    }
+    setStatusSettings(prev => (prev ? { ...prev, [status]: variant } : null));
   };
 
   const handleSaveChanges = async () => {
@@ -125,26 +123,30 @@ export default function SettingsPage() {
           <CardDescription>Personaliza los colores de las insignias para cada estado de reparación.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {statusSettings && repairStatuses.map((status) => (
-            <div key={status} className="flex items-center justify-between">
-              <p className="font-medium">{status}</p>
-              <Select
-                value={statusSettings[status]}
-                onValueChange={(value: BadgeVariant) => handleStatusChange(status, value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Seleccionar estilo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {badgeVariants.map((variant) => (
-                    <SelectItem key={variant} value={variant} className="capitalize">
-                      {variant}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+          {statusSettings ? (
+            repairStatuses.map((status) => (
+              <div key={status} className="flex items-center justify-between">
+                <p className="font-medium">{status}</p>
+                <Select
+                  value={statusSettings[status]}
+                  onValueChange={(value: BadgeVariant) => handleStatusChange(status, value)}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Seleccionar estilo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {badgeVariants.map((variant) => (
+                      <SelectItem key={variant} value={variant} className="capitalize">
+                        {variant}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ))
+          ) : (
+             <p>Cargando configuración...</p>
+          )}
           <div className="flex justify-end pt-4">
             <Button onClick={handleSaveChanges} disabled={!statusSettings}>Guardar Cambios</Button>
           </div>
