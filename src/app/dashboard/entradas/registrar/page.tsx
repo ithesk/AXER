@@ -7,7 +7,7 @@ export default function RegisterRepairPage() {
     <div className="flex flex-col gap-6">
       <PageHeader 
         title="Registrar Nueva Entrada" 
-        description="Complete el formulario para registrar una nueva orden de reparación." 
+        description="Siga los pasos para registrar una nueva orden de reparación." 
       />
 
       <Card>

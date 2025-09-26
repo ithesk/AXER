@@ -25,14 +25,14 @@ export type NewRepair = Omit<Repair, 'id' | 'status' | 'entryDate' | 'evaluation
 
 export async function addRepair(repairData: NewRepair) {
     const repairsCol = collection(db, 'repairs');
-    const newRepair: Omit<Repair, 'id'> = {
+    const newDoc: Omit<Repair, 'id'> = {
         ...repairData,
         technician: repairData.technician || "No Asignado",
         status: "Cotización",
         entryDate: new Date().toISOString(),
         evaluation: "",
     }
-    await addDoc(repairsCol, newRepair);
+    await addDoc(repairsCol, newDoc);
 }
 
 export async function getRepairs(): Promise<Repair[]> {
@@ -60,7 +60,8 @@ export async function seedRepairs(repairs: Repair[]) {
     
     repairs.forEach(repair => {
         const docRef = doc(repairsCol, repair.id);
-        batch.set(docRef, repair);
+        const { id, ...repairData } = repair;
+        batch.set(docRef, repairData);
     });
 
     await batch.commit();
