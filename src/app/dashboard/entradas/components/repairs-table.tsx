@@ -65,7 +65,8 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
     );
 
   const getBadgeVariant = (status: RepairStatus): BadgeVariant => {
-    return statusSettings ? statusSettings[status] : 'outline';
+    // We can safely assert statusSettings is not null because we check for it before rendering the rows.
+    return statusSettings![status] || 'outline';
   };
 
   const renderTableRows = () => {
@@ -117,7 +118,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as RepairStatus | "Todas")}>
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div className="flex-1 relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
