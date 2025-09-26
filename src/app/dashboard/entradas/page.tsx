@@ -97,90 +97,80 @@ export default function EntradasPage() {
             <CardTitle>Órdenes de Reparación</CardTitle>
             <CardDescription>Una lista de todos los equipos actualmente en el taller.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por cliente, equipo, estado..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <TabsList>
-                  {statusFilters.map(status => (
-                    <TabsTrigger key={status} value={status} onClick={() => setActiveTab(status)}>{status}</TabsTrigger>
-                  ))}
-                </TabsList>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9 flex">
-                      <ListFilter className="mr-2 h-4 w-4" />
-                      Vista
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Mostrar/Ocultar Columnas</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked={columnVisibility.id} onCheckedChange={() => toggleColumn('id')}>ID de Reparación</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={columnVisibility.customer} onCheckedChange={() => toggleColumn('customer')}>Cliente</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={columnVisibility.device} onCheckedChange={() => toggleColumn('device')}>Equipo y Falla</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={columnVisibility.technician} onCheckedChange={() => toggleColumn('technician')}>Técnico Asignado</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={columnVisibility.entryDate} onCheckedChange={() => toggleColumn('entryDate')}>Fecha de Ingreso</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={columnVisibility.status} onCheckedChange={() => toggleColumn('status')}>Estado</DropdownMenuCheckboxItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <DropdownMenu>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por cliente, equipo, estado..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <TabsList>
+                    {statusFilters.map(status => (
+                      <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
+                    ))}
+                  </TabsList>
+                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-9 w-9">
-                            <Settings className="h-4 w-4" />
-                            <span className="sr-only">Configuración</span>
-                        </Button>
+                      <Button variant="outline" size="sm" className="h-9 flex">
+                        <ListFilter className="mr-2 h-4 w-4" />
+                        Vista
+                      </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Configuración del Módulo</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Ajustes de Notificaciones</DropdownMenuItem>
-                        <DropdownMenuItem>Estados Personalizados</DropdownMenuItem>
-                        <DropdownMenuItem>Técnicos</DropdownMenuItem>
+                      <DropdownMenuLabel>Mostrar/Ocultar Columnas</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuCheckboxItem checked={columnVisibility.id} onCheckedChange={() => toggleColumn('id')}>ID de Reparación</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={columnVisibility.customer} onCheckedChange={() => toggleColumn('customer')}>Cliente</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={columnVisibility.device} onCheckedChange={() => toggleColumn('device')}>Equipo y Falla</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={columnVisibility.technician} onCheckedChange={() => toggleColumn('technician')}>Técnico Asignado</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={columnVisibility.entryDate} onCheckedChange={() => toggleColumn('entryDate')}>Fecha de Ingreso</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={columnVisibility.status} onCheckedChange={() => toggleColumn('status')}>Estado</DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-          </div>
-          <Tabs value={activeTab}>
-              <div className="border rounded-md mt-4">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      {columnVisibility.id && <TableHead>ID</TableHead>}
-                      {columnVisibility.customer && <TableHead>Cliente</TableHead>}
-                      {columnVisibility.device && <TableHead>Equipo y Falla</TableHead>}
-                      {columnVisibility.technician && <TableHead>Técnico</TableHead>}
-                      {columnVisibility.entryDate && <TableHead>Ingreso</TableHead>}
-                      {columnVisibility.status && <TableHead>Estado</TableHead>}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TabsContent value="Todas" className="p-0 m-0">
-                      {renderTableRows(filteredRepairs)}
-                    </TabsContent>
-                    <TabsContent value="Pendiente" className="p-0 m-0">
-                      {renderTableRows(filteredRepairs)}
-                    </TabsContent>
-                    <TabsContent value="En Progreso" className="p-0 m-0">
-                      {renderTableRows(filteredRepairs)}
-                    </TabsContent>
-                    <TabsContent value="Completado" className="p-0 m-0">
-                      {renderTableRows(filteredRepairs)}
-                    </TabsContent>
-                     <TabsContent value="En Espera (Parte)" className="p-0 m-0">
-                      {renderTableRows(filteredRepairs)}
-                    </TabsContent>
-                  </TableBody>
-                </Table>
-              </div>
+                  </DropdownMenu>
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="icon" className="h-9 w-9">
+                              <Settings className="h-4 w-4" />
+                              <span className="sr-only">Configuración</span>
+                          </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Configuración del Módulo</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>Ajustes de Notificaciones</DropdownMenuItem>
+                          <DropdownMenuItem>Estados Personalizados</DropdownMenuItem>
+                          <DropdownMenuItem>Técnicos</DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+            </div>
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {columnVisibility.id && <TableHead>ID</TableHead>}
+                    {columnVisibility.customer && <TableHead>Cliente</TableHead>}
+                    {columnVisibility.device && <TableHead>Equipo y Falla</TableHead>}
+                    {columnVisibility.technician && <TableHead>Técnico</TableHead>}
+                    {columnVisibility.entryDate && <TableHead>Ingreso</TableHead>}
+                    {columnVisibility.status && <TableHead>Estado</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {statusFilters.map(status => (
+                     <TabsContent key={status} value={status}>
+                        {renderTableRows(filteredRepairs)}
+                     </TabsContent>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </Tabs>
         </CardContent>
         <CardFooter>
