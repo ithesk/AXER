@@ -150,6 +150,7 @@ export default function EntradasPage() {
                   </DropdownMenu>
                 </div>
             </div>
+            
             <div className="border rounded-md">
               <Table>
                 <TableHeader>
@@ -163,14 +164,11 @@ export default function EntradasPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {statusFilters.map(status => (
-                     <TabsContent key={status} value={status}>
-                        {renderTableRows(filteredRepairs)}
-                     </TabsContent>
-                  ))}
+                  {renderTableRows(filteredRepairs)}
                 </TableBody>
               </Table>
             </div>
+
           </Tabs>
         </CardContent>
         <CardFooter>
