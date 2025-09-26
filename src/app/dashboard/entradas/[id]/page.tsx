@@ -2,11 +2,10 @@ import { getRepairById } from "@/services/repairs";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { User, Smartphone, Wrench, Calendar, Tag, ArrowLeft, KeyRound, HardDrive, FileText, ClipboardPenLine } from "lucide-react";
+import { User, Smartphone, Wrench, Calendar, ArrowLeft, KeyRound, HardDrive, FileText, ClipboardPenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
+import RepairStatusProgress from "../components/repair-status-progress";
 
 export default async function RepairDetailPage({ params }: { params: { id: string } }) {
   const repair = await getRepairById(params.id);
@@ -25,6 +24,15 @@ export default async function RepairDetailPage({ params }: { params: { id: strin
           </Link>
         </Button>
       </PageHeader>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline">Progreso de la Reparación</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RepairStatusProgress currentStatus={repair.status} />
+        </CardContent>
+      </Card>
       
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 grid gap-6">
@@ -52,19 +60,6 @@ export default async function RepairDetailPage({ params }: { params: { id: strin
               <CardTitle className="font-headline">Información General</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 text-sm">
-                <div className="flex items-center gap-3">
-                  <Tag className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-muted-foreground">Estado</p>
-                    <Badge variant={
-                        repair.status === 'Completado' ? 'default' : 
-                        repair.status === 'En Progreso' ? 'secondary' : 
-                        repair.status === 'Pendiente' ? 'outline' : 'destructive'
-                    }>
-                      {repair.status}
-                    </Badge>
-                  </div>
-                </div>
                 <div className="flex items-center gap-3">
                     <User className="h-5 w-5 text-muted-foreground" />
                     <div>

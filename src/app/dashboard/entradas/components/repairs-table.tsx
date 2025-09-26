@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Repair } from "@/services/repairs";
+import type { Repair, RepairStatus } from "@/services/repairs";
 import { useRouter } from "next/navigation";
 
 type ColumnVisibility = {
@@ -22,7 +22,7 @@ type ColumnVisibility = {
   status: boolean;
 }
 
-const statusFilters = ["Todas", "Pendiente", "En Progreso", "Completado", "En Espera (Parte)"];
+const statusFilters: RepairStatus[] = ["Cotización", "Confirmado", "En Reparación", "Reparado", "Entregado"];
 
 interface RepairsTableProps {
   repairs: Repair[];
@@ -30,7 +30,7 @@ interface RepairsTableProps {
 
 export default function RepairsTable({ repairs: initialRepairs }: RepairsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("Todas");
+  const [activeTab, setActiveTab] = useState<RepairStatus | "Todas">("Todas");
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({
     id: true,
     customer: true,
@@ -53,6 +53,23 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
         String(value).toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
+
+  const getBadgeVariant = (status: RepairStatus) => {
+    switch (status) {
+      case "Entregado":
+        return "default";
+      case "En Reparación":
+        return "secondary";
+      case "Reparado":
+        return "secondary";
+      case "Cotización":
+        return "outline";
+      case "Confirmado":
+        return "outline";
+      default:
+        return "destructive";
+    }
+  };
 
   const renderTableRows = () => {
     if (filteredRepairs.length === 0) {
@@ -77,11 +94,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
         {columnVisibility.technician && <TableCell>{repair.technician}</TableCell>}
         {columnVisibility.entryDate && <TableCell>{new Date(repair.entryDate).toLocaleDateString()}</TableCell>}
         {columnVisibility.status && <TableCell>
-          <Badge variant={
-              repair.status === 'Completado' ? 'default' : 
-              repair.status === 'En Progreso' ? 'secondary' : 
-              repair.status === 'Pendiente' ? 'outline' : 'destructive'
-          }>
+          <Badge variant={getBadgeVariant(repair.status)}>
             {repair.status}
           </Badge>
         </TableCell>}
@@ -110,6 +123,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                 </div>
                 <div className="flex items-center gap-2">
                   <TabsList>
+                      <TabsTrigger key="Todas" value="Todas">Todas</TabsTrigger>
                       {statusFilters.map(status => (
                         <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
                       ))}

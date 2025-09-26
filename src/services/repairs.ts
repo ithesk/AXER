@@ -1,12 +1,15 @@
 import { db } from "@/lib/firebase";
 import { collection, getDocs, doc, setDoc, writeBatch, getDoc } from "firebase/firestore";
 
+export type RepairStatus = "Cotización" | "Confirmado" | "En Reparación" | "Reparado" | "Entregado";
+
+
 export type Repair = {
     id: string;
     customer: string;
     device: string; // This will now be the product to repair, e.g., "iPhone 14"
     technician: string;
-    status: "En Progreso" | "Completado" | "Pendiente" | "En Espera (Parte)";
+    status: RepairStatus;
     entryDate: string; // Should be in a format that can include time, e.g., ISO string
     deviceType: 'Tablet' | 'Celular' | 'Reloj' | 'Laptop';
     problemDescription: string;
