@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import type { FunctionalityTestResults } from "@/services/repairs";
+import { useEffect } from "react";
 
 const functionalityTestSchema = z.object({
     cameraFront: z.enum(["ok", "fail", "na"]),
@@ -25,6 +26,7 @@ const functionalityTestSchema = z.object({
 });
 
 interface FunctionalityTestFormProps {
+    initialData?: FunctionalityTestResults;
     onSave: (data: FunctionalityTestResults) => void;
     onCancel: () => void;
 }
@@ -44,10 +46,10 @@ const testItems: { name: keyof Omit<FunctionalityTestResults, 'other'>; label: s
 ];
 
 
-export default function FunctionalityTestForm({ onSave, onCancel }: FunctionalityTestFormProps) {
+export default function FunctionalityTestForm({ initialData, onSave, onCancel }: FunctionalityTestFormProps) {
     const form = useForm<FunctionalityTestResults>({
         resolver: zodResolver(functionalityTestSchema),
-        defaultValues: {
+        defaultValues: initialData || {
             cameraFront: "na",
             cameraBack: "na",
             chargingPort: "na",
@@ -62,6 +64,12 @@ export default function FunctionalityTestForm({ onSave, onCancel }: Functionalit
             other: "",
         },
     });
+
+    useEffect(() => {
+        if (initialData) {
+            form.reset(initialData);
+        }
+    }, [initialData, form]);
 
     function onSubmit(data: FunctionalityTestResults) {
         onSave(data);
@@ -82,7 +90,7 @@ export default function FunctionalityTestForm({ onSave, onCancel }: Functionalit
                                     <FormControl>
                                         <RadioGroup
                                             onValueChange={field.onChange}
-                                            defaultValue={field.value}
+                                            value={field.value}
                                             className="flex items-center space-x-4"
                                         >
                                             <FormItem className="flex items-center space-x-2">
@@ -136,5 +144,3 @@ export default function FunctionalityTestForm({ onSave, onCancel }: Functionalit
         </Form>
     );
 }
-
-    

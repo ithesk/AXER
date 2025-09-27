@@ -4,10 +4,10 @@ import type { RepairStatus } from "./repairs";
 import type { VariantProps } from "class-variance-authority";
 import type { badgeVariants } from "@/components/ui/badge";
 
-export type BadgeVariant = Exclude<VariantProps<typeof badgeVariants>["variant"], null | undefined>;
+export type StatusVariant = Exclude<VariantProps<typeof badgeVariants>["variant"], null | undefined>;
 
 export type StatusSettings = {
-    [key in RepairStatus]: BadgeVariant;
+    [key in RepairStatus]: StatusVariant;
 };
 
 const settingsDocRef = doc(db, 'settings', 'repairStatusStyles');

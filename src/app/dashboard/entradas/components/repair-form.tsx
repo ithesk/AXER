@@ -36,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { addRepair, FunctionalityTestResults, NewRepair } from "@/services/repairs";
 import { useState, useEffect } from "react";
-import { Loader2, ChevronsUpDown, Check } from "lucide-react";
+import { Loader2, ChevronsUpDown, Check, Pencil } from "lucide-react";
 import { getDeviceData, DeviceData } from "@/services/devices";
 import { getCustomers, addCustomer, Customer, NewCustomer } from "@/services/customers";
 import { cn } from "@/lib/utils";
@@ -46,6 +46,7 @@ import FunctionalityTestForm from "./functionality-test-form";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { getCommonProblems } from "@/services/common-problems";
+import { StatusVariant } from "@/services/settings";
 
 const repairFormSchema = z.object({
   customer: z.string().min(2, { message: "Debe seleccionar o crear un cliente." }),
@@ -65,6 +66,20 @@ type DeviceOption = {
   label: string;
   value: string;
 };
+
+const functionalityTestItems: { name: keyof Omit<FunctionalityTestResults, 'other'>; label: string }[] = [
+    { name: "cameraFront", label: "Cámara Frontal" },
+    { name: "cameraBack", label: "Cámara Trasera" },
+    { name: "chargingPort", label: "Puerto de Carga" },
+    { name: "screen", label: "Pantalla" },
+    { name: "touch", label: "Táctil" },
+    { name: "buttons", label: "Botones" },
+    { name: "earpiece", label: "Altavoz Auricular" },
+    { name: "speaker", label: "Altavoz Principal" },
+    { name: "microphone", label: "Micrófono" },
+    { name: "wifi", label: "Wi-Fi / Red" },
+    { name: "biometrics", label: "Biometría" },
+];
 
 export default function RepairForm() {
   const [loading, setLoading] = useState(false);
@@ -98,6 +113,7 @@ export default function RepairForm() {
   });
   
   const watchedFields = useWatch({ control: form.control });
+  const functionalityTestResults = form.watch("functionalityTest");
 
   useEffect(() => {
     async function loadInitialData() {
@@ -138,7 +154,7 @@ export default function RepairForm() {
   };
 
   const handleFunctionalityTestSave = (results: FunctionalityTestResults) => {
-    form.setValue("functionalityTest", results);
+    form.setValue("functionalityTest", results, { shouldValidate: true });
     setFunctionalityTestOpen(false);
     toast({
       title: "Prueba Guardada",
@@ -148,9 +164,9 @@ export default function RepairForm() {
   
   const handleDeviceIsOn = (isOn: boolean) => {
     setDeviceIsOn(isOn);
-    if (isOn) {
+    if (isOn && !form.getValues("functionalityTest")) {
         setFunctionalityTestOpen(true);
-    } else {
+    } else if (!isOn) {
         form.unregister("functionalityTest");
     }
   }
@@ -185,6 +201,14 @@ export default function RepairForm() {
 
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => setStep(prev => prev - 1);
+  
+  const getStatusVariant = (status: "ok" | "fail" | "na"): StatusVariant => {
+    switch (status) {
+        case "ok": return "default";
+        case "fail": return "destructive";
+        case "na": return "secondary";
+    }
+  }
 
   return (
     <>
@@ -398,11 +422,34 @@ export default function RepairForm() {
                         <Switch id="device-on-switch" checked={deviceIsOn} onCheckedChange={handleDeviceIsOn} />
                         <Label htmlFor="device-on-switch">¿El equipo enciende?</Label>
                       </div>
-                      {form.getValues("functionalityTest") && (
-                        <div className="text-sm text-green-600 flex items-center gap-2">
-                          <Check className="h-4 w-4" />
-                          <span>Prueba de funciones completada.</span>
-                        </div>
+                      {functionalityTestResults && (
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-sm font-medium">Resultados de la Prueba:</h4>
+                                <Button variant="ghost" size="sm" onClick={() => setFunctionalityTestOpen(true)}>
+                                    <Pencil className="mr-2 h-3 w-3"/>
+                                    Editar Prueba
+                                </Button>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                                {functionalityTestItems.map(item => {
+                                    const result = functionalityTestResults[item.name];
+                                    if(result === 'na') return null;
+                                    return (
+                                        <div key={item.name} className="flex items-center justify-between">
+                                            <span>{item.label}:</span>
+                                            <Badge variant={getStatusVariant(result)} className="capitalize">{result === 'ok' ? 'OK' : 'Falla'}</Badge>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                            {functionalityTestResults.other && (
+                                <div>
+                                    <p className="text-sm font-medium">Otras Observaciones:</p>
+                                    <p className="text-sm text-muted-foreground">{functionalityTestResults.other}</p>
+                                </div>
+                            )}
+                          </div>
                       )}
                   </div>
             </div>
@@ -419,7 +466,7 @@ export default function RepairForm() {
                         <FormItem>
                             <FormLabel>IMEI o Número de Serie</FormLabel>
                             <FormControl>
-                            <Input placeholder="(Opcional)" {...field} />
+                            <Input placeholder="Opcional" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -432,7 +479,7 @@ export default function RepairForm() {
                         <FormItem>
                             <FormLabel>Contraseña del Equipo</FormLabel>
                             <FormControl>
-                            <Input placeholder="(Opcional)" {...field} />
+                            <Input placeholder="Opcional" {...field} />
                             </FormControl>
                             <FormDescription>Dejar en blanco si no tiene.</FormDescription>
                             <FormMessage />
@@ -443,7 +490,7 @@ export default function RepairForm() {
             </div>
           )}
 
-          <div className="flex justify-between">
+          <div className="flex justify-between pt-4">
             {step > 1 && (
               <Button type="button" variant="outline" onClick={prevStep}>
                 Anterior
@@ -464,7 +511,7 @@ export default function RepairForm() {
                 </Button>
             )}
             {step === 4 && (
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading || !form.formState.isValid}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {loading ? "Guardando..." : "Registrar Entrada"}
                 </Button>
@@ -490,16 +537,22 @@ export default function RepairForm() {
       </Dialog>
       
       <Dialog open={functionalityTestOpen} onOpenChange={setFunctionalityTestOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
             <DialogHeader>
                 <DialogTitle>Prueba de Funciones del Equipo</DialogTitle>
                 <DialogDescription>
-                  Seleccione el estado de cada función.
+                  Seleccione el estado de cada función. Marque N/A si no aplica.
                 </DialogDescription>
             </DialogHeader>
             <FunctionalityTestForm 
+                initialData={functionalityTestResults}
                 onSave={handleFunctionalityTestSave}
-                onCancel={() => setFunctionalityTestOpen(false)}
+                onCancel={() => {
+                  setFunctionalityTestOpen(false)
+                  if (!form.getValues("functionalityTest")) {
+                    setDeviceIsOn(false);
+                  }
+                }}
             />
         </DialogContent>
       </Dialog>
