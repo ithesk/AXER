@@ -6,16 +6,11 @@ import { PlusCircle, MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { getCustomers } from "@/services/customers";
 
-const customers = [
-  { id: "CUST-001", name: "John Doe", email: "john.doe@email.com", lastPurchase: "2024-05-01", company: "Acme Inc." },
-  { id: "CUST-002", name: "Jane Smith", email: "jane.smith@email.com", lastPurchase: "2024-05-01", company: "Globex Corp." },
-  { id: "CUST-003", name: "Peter Jones", email: "peter.jones@email.com", lastPurchase: "2024-05-02", company: "Acme Inc." },
-  { id: "CUST-004", name: "Mary Johnson", email: "mary.johnson@email.com", lastPurchase: "2024-05-03", company: "Acme Inc." },
-  { id: "CUST-005", name: "David Williams", email: "david.w@email.com", lastPurchase: "2024-05-04", company: "Acme Inc." },
-];
+export default async function CustomersPage() {
+  const customers = await getCustomers();
 
-export default function CustomersPage() {
   return (
     <>
       <PageHeader title="Clientes" description="Gestiona tu base de clientes y consulta su historial.">
@@ -35,8 +30,8 @@ export default function CustomersPage() {
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Empresa</TableHead>
-                <TableHead>Última Compra</TableHead>
+                <TableHead>Teléfono</TableHead>
+                <TableHead>Compañía</TableHead>
                 <TableHead>
                   <span className="sr-only">Acciones</span>
                 </TableHead>
@@ -46,11 +41,11 @@ export default function CustomersPage() {
               {customers.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell className="font-medium">{customer.name}</TableCell>
-                  <TableCell>{customer.email}</TableCell>
+                  <TableCell>{customer.email || 'N/A'}</TableCell>
+                  <TableCell>{customer.phone}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{customer.company}</Badge>
+                    {customer.company && <Badge variant="outline">{customer.company}</Badge>}
                   </TableCell>
-                  <TableCell>{customer.lastPurchase}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -74,7 +69,7 @@ export default function CustomersPage() {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Mostrando <strong>1-5</strong> de <strong>{customers.length}</strong> clientes
+            Mostrando <strong>{customers.length}</strong> de <strong>{customers.length}</strong> clientes
           </div>
         </CardFooter>
       </Card>

@@ -31,16 +31,19 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { addRepair } from "@/services/repairs";
 import { useState, useEffect } from "react";
 import { Loader2, ArrowLeft, ChevronsUpDown, Check } from "lucide-react";
 import { getDeviceData, DeviceData } from "@/services/devices";
+import { getCustomers, addCustomer, Customer } from "@/services/customers";
 import { cn } from "@/lib/utils";
+import CustomerForm from "../../customers/components/customer-form";
 
 const repairFormSchema = z.object({
-  customer: z.string().min(2, { message: "El nombre del cliente debe tener al menos 2 caracteres." }),
+  customer: z.string().min(2, { message: "Debe seleccionar o crear un cliente." }),
   deviceType: z.enum(["Celular", "Tablet", "Reloj", "Laptop"], {
     errorMap: () => ({ message: "Por favor seleccione un tipo de equipo." }),
   }),
@@ -58,34 +61,28 @@ type DeviceOption = {
   value: string;
 };
 
-// Mock customer data, in a real app this would come from a service/API
-const customers = [
-  { value: "John Doe", label: "John Doe" },
-  { value: "Jane Smith", label: "Jane Smith" },
-  { value: "Peter Jones", label: "Peter Jones" },
-  { value: "Mary Johnson", label: "Mary Johnson" },
-  { value: "David Williams", label: "David Williams" },
-];
-
-
 export default function RepairForm() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
   const [deviceOptions, setDeviceOptions] = useState<DeviceOption[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [devicePopoverOpen, setDevicePopoverOpen] = useState(false);
   const [customerPopoverOpen, setCustomerPopoverOpen] = useState(false);
-
+  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState("");
 
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    async function loadDeviceData() {
-      const data = await getDeviceData();
-      setDeviceData(data);
+    async function loadInitialData() {
+      const devices = await getDeviceData();
+      setDeviceData(devices);
+      const fetchedCustomers = await getCustomers();
+      setCustomers(fetchedCustomers);
     }
-    loadDeviceData();
+    loadInitialData();
   }, []);
 
   const form = useForm<RepairFormValues>({
@@ -114,6 +111,18 @@ export default function RepairForm() {
       form.setValue("device", ""); // Reset device selection
     }
   }, [selectedDeviceType, deviceData, form]);
+
+  const handleCustomerCreated = async (newCustomer: Customer) => {
+    const newCustomerWithId = { ...newCustomer, id: newCustomer.id || "temp-id" };
+    setCustomers(prev => [...prev, newCustomerWithId]);
+    form.setValue("customer", newCustomer.name);
+    setCustomerDialogOpen(false);
+    setCustomerPopoverOpen(false);
+    toast({
+      title: "Cliente Creado",
+      description: `${newCustomer.name} ha sido añadido a la lista de clientes.`,
+    });
+  };
 
   async function onSubmit(data: RepairFormValues) {
     setLoading(true);
@@ -150,248 +159,260 @@ export default function RepairForm() {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        
-        {step === 1 && (
-          <div className="space-y-8">
-            <div className="grid md:grid-cols-2 gap-8">
+    <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          
+          {step === 1 && (
+            <div className="space-y-8">
+              <div className="grid md:grid-cols-2 gap-8">
+                <FormField
+                  control={form.control}
+                  name="deviceType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Equipo</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione un tipo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Celular">Celular</SelectItem>
+                          <SelectItem value="Tablet">Tablet</SelectItem>
+                          <SelectItem value="Reloj">Reloj</SelectItem>
+                          <SelectItem value="Laptop">Laptop</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="customer"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Nombre del Cliente</FormLabel>
+                      <Popover open={customerPopoverOpen} onOpenChange={setCustomerPopoverOpen}>
+                          <PopoverTrigger asChild>
+                              <FormControl>
+                                  <Button
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn(
+                                          "w-full justify-between",
+                                          !field.value && "text-muted-foreground"
+                                      )}
+                                  >
+                                      {field.value || "Seleccione o cree un cliente"}
+                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                              </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                              <Command>
+                                  <CommandInput 
+                                      placeholder="Buscar cliente por nombre o teléfono..." 
+                                      onValueChange={(currentValue) => {
+                                        setNewCustomerName(currentValue);
+                                        // We don't set form value directly here to allow for creation flow
+                                      }}
+                                  />
+                                  <CommandList>
+                                      <CommandEmpty>
+                                        <DialogTrigger asChild>
+                                          <Button variant="ghost" className="w-full text-left justify-start">
+                                            Crear nuevo cliente: "{newCustomerName}"
+                                          </Button>
+                                        </DialogTrigger>
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                          {customers.map((customer) => (
+                                              <CommandItem
+                                                  value={`${customer.name} - ${customer.phone}`}
+                                                  key={customer.id}
+                                                  onSelect={() => {
+                                                      form.setValue("customer", customer.name);
+                                                      setCustomerPopoverOpen(false);
+                                                  }}
+                                              >
+                                                  <Check
+                                                      className={cn(
+                                                          "mr-2 h-4 w-4",
+                                                          customer.name === field.value
+                                                              ? "opacity-100"
+                                                              : "opacity-0"
+                                                      )}
+                                                  />
+                                                  <div>
+                                                    <p>{customer.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{customer.phone}</p>
+                                                  </div>
+                                              </CommandItem>
+                                          ))}
+                                      </CommandGroup>
+                                  </CommandList>
+                              </Command>
+                          </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-8">
+              <FormField
+                  control={form.control}
+                  name="device"
+                  render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                      <FormLabel>Equipo</FormLabel>
+                      <Popover open={devicePopoverOpen} onOpenChange={setDevicePopoverOpen}>
+                      <PopoverTrigger asChild>
+                          <FormControl>
+                          <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                              )}
+                          >
+                              {field.value
+                              ? deviceOptions.find(
+                                  (option) => option.value === field.value
+                                  )?.label
+                              : "Seleccione un equipo"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                          </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                          <CommandInput placeholder="Buscar equipo..." />
+                          <CommandList>
+                              <CommandEmpty>No se encontró el equipo.</CommandEmpty>
+                              <CommandGroup>
+                              {deviceOptions.map((option) => (
+                                  <CommandItem
+                                  value={option.label}
+                                  key={option.value}
+                                  onSelect={() => {
+                                      form.setValue("device", option.value);
+                                      setDevicePopoverOpen(false);
+                                  }}
+                                  >
+                                  <Check
+                                      className={cn(
+                                      "mr-2 h-4 w-4",
+                                      option.value === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                  />
+                                  {option.label}
+                                  </CommandItem>
+                              ))}
+                              </CommandGroup>
+                          </CommandList>
+                          </Command>
+                      </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                  </FormItem>
+                  )}
+              />
+
               <FormField
                 control={form.control}
-                name="deviceType"
+                name="problemDescription"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de Equipo</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccione un tipo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Celular">Celular</SelectItem>
-                        <SelectItem value="Tablet">Tablet</SelectItem>
-                        <SelectItem value="Reloj">Reloj</SelectItem>
-                        <SelectItem value="Laptop">Laptop</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Descripción del Problema</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Ej: La pantalla está rota y la batería no carga..."
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="customer"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Nombre del Cliente</FormLabel>
-                    <Popover open={customerPopoverOpen} onOpenChange={setCustomerPopoverOpen}>
-                        <PopoverTrigger asChild>
-                            <FormControl>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={cn(
-                                        "w-full justify-between",
-                                        !field.value && "text-muted-foreground"
-                                    )}
-                                >
-                                    {field.value || "Seleccione o cree un cliente"}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command>
-                                <CommandInput 
-                                    placeholder="Buscar cliente..." 
-                                    onValueChange={(currentValue) => {
-                                        if (!customers.some(c => c.value.toLowerCase() === currentValue.toLowerCase())) {
-                                            form.setValue("customer", currentValue)
-                                        }
-                                    }}
-                                />
-                                <CommandList>
-                                    <CommandEmpty>
-                                        <Button 
-                                            variant="ghost" 
-                                            className="w-full text-left justify-start"
-                                            onClick={() => {
-                                                // Value is already set by onValueChange
-                                                setCustomerPopoverOpen(false);
-                                            }}
-                                        >
-                                            Crear nuevo cliente: "{form.getValues("customer")}"
-                                        </Button>
-                                    </CommandEmpty>
-                                    <CommandGroup>
-                                        {customers.map((customer) => (
-                                            <CommandItem
-                                                value={customer.label}
-                                                key={customer.value}
-                                                onSelect={() => {
-                                                    form.setValue("customer", customer.value);
-                                                    setCustomerPopoverOpen(false);
-                                                }}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        customer.value === field.value
-                                                            ? "opacity-100"
-                                                            : "opacity-0"
-                                                    )}
-                                                />
-                                                {customer.label}
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid md:grid-cols-2 gap-8">
+                  <FormField
+                      control={form.control}
+                      name="imeiOrSn"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>IMEI o Número de Serie</FormLabel>
+                          <FormControl>
+                          <Input placeholder="(Opcional)" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Contraseña del Equipo</FormLabel>
+                          <FormControl>
+                          <Input placeholder="(Opcional)" {...field} />
+                          </FormControl>
+                          <FormDescription>Dejar en blanco si no tiene.</FormDescription>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+              </div>
             </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-8">
-            <FormField
-                control={form.control}
-                name="device"
-                render={({ field }) => (
-                <FormItem className="flex flex-col">
-                    <FormLabel>Equipo</FormLabel>
-                    <Popover open={devicePopoverOpen} onOpenChange={setDevicePopoverOpen}>
-                    <PopoverTrigger asChild>
-                        <FormControl>
-                        <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                            "w-full justify-between",
-                            !field.value && "text-muted-foreground"
-                            )}
-                        >
-                            {field.value
-                            ? deviceOptions.find(
-                                (option) => option.value === field.value
-                                )?.label
-                            : "Seleccione un equipo"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                        </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                        <Command>
-                        <CommandInput placeholder="Buscar equipo..." />
-                        <CommandList>
-                            <CommandEmpty>No se encontró el equipo.</CommandEmpty>
-                            <CommandGroup>
-                            {deviceOptions.map((option) => (
-                                <CommandItem
-                                value={option.label}
-                                key={option.value}
-                                onSelect={() => {
-                                    form.setValue("device", option.value);
-                                    setDevicePopoverOpen(false);
-                                }}
-                                >
-                                <Check
-                                    className={cn(
-                                    "mr-2 h-4 w-4",
-                                    option.value === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                />
-                                {option.label}
-                                </CommandItem>
-                            ))}
-                            </CommandGroup>
-                        </CommandList>
-                        </Command>
-                    </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-
-            <FormField
-              control={form.control}
-              name="problemDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción del Problema</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Ej: La pantalla está rota y la batería no carga..."
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid md:grid-cols-2 gap-8">
-                <FormField
-                    control={form.control}
-                    name="imeiOrSn"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>IMEI o Número de Serie</FormLabel>
-                        <FormControl>
-                        <Input placeholder="(Opcional)" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Contraseña del Equipo</FormLabel>
-                        <FormControl>
-                        <Input placeholder="(Opcional)" {...field} />
-                        </FormControl>
-                        <FormDescription>Dejar en blanco si no tiene.</FormDescription>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-between">
-          {step > 1 && (
-            <Button type="button" variant="outline" onClick={prevStep}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Anterior
-            </Button>
           )}
-          <div className={cn(step === 1 && "w-full flex justify-end")}>
-            {step < 2 ? (
-              <Button type="button" onClick={nextStep} disabled={!selectedDeviceType || !form.getValues("customer")}>
-                Siguiente
-              </Button>
-            ) : (
-              <Button type="submit" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {loading ? "Guardando..." : "Registrar Entrada"}
+
+          <div className="flex justify-between">
+            {step > 1 && (
+              <Button type="button" variant="outline" onClick={prevStep}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Anterior
               </Button>
             )}
+            <div className={cn(step === 1 && "w-full flex justify-end")}>
+              {step < 2 ? (
+                <Button type="button" onClick={nextStep} disabled={!selectedDeviceType || !form.getValues("customer")}>
+                  Siguiente
+                </Button>
+              ) : (
+                <Button type="submit" disabled={loading}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {loading ? "Guardando..." : "Registrar Entrada"}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      </form>
-    </Form>
+        </form>
+      </Form>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Crear Nuevo Cliente</DialogTitle>
+          <DialogDescription>
+            Complete los detalles del nuevo cliente. Nombre y teléfono son obligatorios.
+          </DialogDescription>
+        </DialogHeader>
+        <CustomerForm 
+          initialName={newCustomerName}
+          onSave={handleCustomerCreated} 
+          onCancel={() => setCustomerDialogOpen(false)} 
+        />
+      </DialogContent>
+    </Dialog>
   );
 }

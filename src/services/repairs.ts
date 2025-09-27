@@ -13,7 +13,7 @@ export type Repair = {
     entryDate: string; // Should be in a format that can include time, e.g., ISO string
     deviceType: 'Tablet' | 'Celular' | 'Reloj' | 'Laptop';
     problemDescription: string;
-    imeiOrSn: string;
+    imeiOrSn?: string;
     password?: string;
     evaluation?: string;
 };
