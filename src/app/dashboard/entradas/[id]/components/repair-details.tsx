@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Repair, RepairStatus, updateRepair, FunctionalityTestResult, FunctionalityTestResults } from "@/services/repairs";
+import { Repair, RepairStatus, updateRepair, FunctionalityTestResult, FunctionalityTestResults, EvaluationEntry } from "@/services/repairs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Smartphone, Wrench, Calendar, KeyRound, HardDrive, FileText, ClipboardPenLine, ListChecks, Check, ChevronsUpDown, Loader2, Pencil } from "lucide-react";
+import { User, Smartphone, Wrench, Calendar, KeyRound, HardDrive, FileText, ClipboardPenLine, ListChecks, Check, ChevronsUpDown, Loader2, Pencil, MessageSquarePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RepairStatusProgress from "../../components/repair-status-progress";
 import { Badge, BadgeVariant } from "@/components/ui/badge";
@@ -36,6 +36,20 @@ const functionalityTestItems: { name: keyof Omit<import("@/services/repairs").Fu
 const availableTechnicians = ["David Williams", "Juan Perez", "Maria Rodriguez", "No Asignado"];
 const repairStatuses: RepairStatus[] = ["Cotización", "Confirmado", "En Reparación", "Reparado", "Entregado"];
 
+const nextStatusMap: Partial<Record<RepairStatus, RepairStatus>> = {
+    "Cotización": "Confirmado",
+    "Confirmado": "En Reparación",
+    "En Reparación": "Reparado",
+    "Reparado": "Entregado",
+};
+
+const nextStatusLabels: Partial<Record<RepairStatus, string>> = {
+    "Cotización": "Confirmar Reparación",
+    "Confirmado": "Iniciar Reparación",
+    "En Reparación": "Marcar como Reparado",
+    "Reparado": "Marcar como Entregado",
+};
+
 interface RepairDetailsProps {
     initialRepair: Repair;
 }
@@ -43,14 +57,12 @@ interface RepairDetailsProps {
 export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     const [repair, setRepair] = useState(initialRepair);
     const [isEditingProblem, setIsEditingProblem] = useState(false);
-    const [isEditingEvaluation, setIsEditingEvaluation] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const [problemDescription, setProblemDescription] = useState(repair.problemDescription || "");
-    const [evaluation, setEvaluation] = useState(repair.evaluation || "");
+    const [newEvaluationNote, setNewEvaluationNote] = useState("");
 
     const [technicianPopoverOpen, setTechnicianPopoverOpen] = useState(false);
-    const [statusPopoverOpen, setStatusPopoverOpen] = useState(false);
     const [functionalityTestOpen, setFunctionalityTestOpen] = useState(false);
 
     const [formattedEntryDate, setFormattedEntryDate] = useState("");
@@ -71,9 +83,7 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
             });
             // Reset editing states
             if (field === "problemDescription") setIsEditingProblem(false);
-            if (field === "evaluation") setIsEditingEvaluation(false);
             if (field === "technician") setTechnicianPopoverOpen(false);
-            if (field === "status") setStatusPopoverOpen(false);
             
         } catch (error) {
             console.error("Failed to update repair:", error);
@@ -91,6 +101,35 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
         await handleSave('functionalityTest', results, "La prueba de funciones ha sido actualizada.");
         setFunctionalityTestOpen(false);
     }
+
+    const handleAddEvaluationNote = async () => {
+        if (!newEvaluationNote.trim()) return;
+        setIsLoading(true);
+        try {
+            const newEntry: EvaluationEntry = {
+                note: newEvaluationNote,
+                author: repair.technician,
+                date: new Date().toISOString(),
+            };
+            const updatedEntries = [...(repair.evaluation || []), newEntry];
+            const updatedRepair = await updateRepair(repair.id, { evaluation: updatedEntries });
+            setRepair(updatedRepair);
+            setNewEvaluationNote("");
+            toast({
+                title: "Nota Añadida",
+                description: "La bitácora de evaluación ha sido actualizada.",
+            });
+        } catch (error) {
+            console.error("Failed to add evaluation note:", error);
+            toast({
+                title: "Error",
+                description: "No se pudo añadir la nota de evaluación.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
     
     const getStatusVariant = (status: FunctionalityTestResult): BadgeVariant => {
         switch (status) {
@@ -109,6 +148,15 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
         }
     }
 
+    const handleStatusUpdate = () => {
+        const nextStatus = nextStatusMap[repair.status];
+        if (nextStatus) {
+            handleSave('status', nextStatus, `Estado actualizado a "${nextStatus}"`);
+        }
+    };
+
+    const nextStatusLabel = nextStatusLabels[repair.status];
+
     return (
         <>
             <div className="flex flex-col gap-6">
@@ -116,40 +164,12 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                     <CardHeader>
                         <div className="flex justify-between items-center">
                             <CardTitle className="font-headline">Progreso de la Reparación</CardTitle>
-                            <Popover open={statusPopoverOpen} onOpenChange={setStatusPopoverOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={statusPopoverOpen}
-                                        className="w-[200px] justify-between"
-                                        disabled={isLoading}
-                                    >
-                                        Actualizar Estado
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[200px] p-0">
-                                    <Command>
-                                        <CommandGroup>
-                                            {repairStatuses.map((status) => (
-                                                <CommandItem
-                                                    key={status}
-                                                    onSelect={() => handleSave('status', status)}
-                                                >
-                                                    <Check
-                                                        className={cn(
-                                                            "mr-2 h-4 w-4",
-                                                            repair.status === status ? "opacity-100" : "opacity-0"
-                                                        )}
-                                                    />
-                                                    {status}
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
+                            {nextStatusLabel && (
+                                <Button onClick={handleStatusUpdate} disabled={isLoading}>
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {nextStatusLabel}
+                                </Button>
+                            )}
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -186,26 +206,40 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                         
                         <Card>
                             <CardHeader>
-                                 <div className="flex justify-between items-center">
-                                   <CardTitle className="font-headline flex items-center gap-2"><ClipboardPenLine className="h-5 w-5" /> Evaluación Técnica</CardTitle>
-                                    {!isEditingEvaluation && <Button variant="outline" size="sm" onClick={() => setIsEditingEvaluation(true)}>Editar</Button>}
-                                </div>
+                                <CardTitle className="font-headline flex items-center gap-2">
+                                    <ClipboardPenLine className="h-5 w-5" /> Bitácora de Evaluación
+                                </CardTitle>
+                                <CardDescription>Registro cronológico del proceso de diagnóstico y reparación.</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                {isEditingEvaluation ? (
-                                    <div className="space-y-2">
-                                        <Textarea value={evaluation} onChange={(e) => setEvaluation(e.target.value)} placeholder="Añada aquí la evaluación del técnico..." rows={4} />
-                                        <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="sm" onClick={() => { setIsEditingEvaluation(false); setEvaluation(repair.evaluation || ""); }}>Cancelar</Button>
-                                            <Button size="sm" onClick={() => handleSave('evaluation', evaluation)} disabled={isLoading}>
-                                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                                Guardar
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <p className="text-muted-foreground">{repair.evaluation || "Pendiente de evaluación."}</p>
-                                )}
+                            <CardContent className="space-y-4">
+                                <div className="space-y-4 max-h-72 overflow-y-auto pr-4 border rounded-lg p-4">
+                                    {repair.evaluation && repair.evaluation.length > 0 ? (
+                                        repair.evaluation.map((entry, index) => (
+                                            <div key={index} className="flex flex-col">
+                                                <div className="flex justify-between items-center">
+                                                    <p className="text-xs font-semibold">{entry.author}</p>
+                                                    <p className="text-xs text-muted-foreground">{new Date(entry.date).toLocaleString()}</p>
+                                                </div>
+                                                <p className="text-sm text-muted-foreground mt-1">{entry.note}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground text-center py-4">No hay notas en la bitácora aún.</p>
+                                    )}
+                                </div>
+                                <div className="flex gap-2">
+                                    <Textarea 
+                                        value={newEvaluationNote}
+                                        onChange={(e) => setNewEvaluationNote(e.target.value)}
+                                        placeholder="Añadir una nueva nota a la bitácora..."
+                                        rows={2}
+                                        className="flex-1"
+                                    />
+                                    <Button onClick={handleAddEvaluationNote} disabled={isLoading || !newEvaluationNote.trim()} size="icon" className="shrink-0">
+                                        <MessageSquarePlus className="h-5 w-5"/>
+                                        <span className="sr-only">Añadir Nota</span>
+                                    </Button>
+                                </div>
                             </CardContent>
                         </Card>
 
@@ -346,3 +380,5 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
         </>
     );
 }
+
+    

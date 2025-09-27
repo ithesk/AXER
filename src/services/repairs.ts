@@ -22,6 +22,11 @@ export type FunctionalityTestResults = {
     other?: string;
 };
 
+export type EvaluationEntry = {
+    note: string;
+    author: string;
+    date: string; // ISO string
+};
 
 export type Repair = {
     id: string;
@@ -34,7 +39,7 @@ export type Repair = {
     problemDescription: string;
     imeiOrSn?: string;
     password?: string;
-    evaluation?: string;
+    evaluation?: EvaluationEntry[];
     functionalityTest?: FunctionalityTestResults;
 };
 
@@ -48,7 +53,7 @@ export async function addRepair(repairData: NewRepair) {
         technician: "No Asignado",
         status: "Cotización",
         entryDate: new Date().toISOString(),
-        evaluation: "",
+        evaluation: [],
     }
     await addDoc(repairsCol, newDoc);
 }
@@ -80,15 +85,28 @@ export async function updateRepair(id: string, data: Partial<Omit<Repair, 'id'>>
     return { id: updatedDoc.id, ...updatedDoc.data() } as Repair;
 }
 
-export async function seedRepairs(repairs: Repair[]) {
+export async function seedRepairs(repairs: Omit<Repair, 'evaluation'>[]) {
     const repairsCol = collection(db, 'repairs');
     const batch = writeBatch(db);
     
     repairs.forEach(repair => {
         const docRef = doc(repairsCol, repair.id);
         const { id, ...repairData } = repair;
-        batch.set(docRef, repairData);
+        const repairDataWithEvaluation = {
+            ...repairData,
+            evaluation: [
+                {
+                    note: "Requiere reemplazo completo del panel frontal. La batería parece estar en buen estado.",
+                    author: "David Williams",
+                    date: new Date("2024-05-10T10:05:00Z").toISOString()
+                }
+            ]
+        };
+
+        batch.set(docRef, repairDataWithEvaluation);
     });
 
     await batch.commit();
 }
+
+    

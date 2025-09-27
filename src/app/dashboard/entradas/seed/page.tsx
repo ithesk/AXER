@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import type { Repair } from "@/services/repairs";
 
-const repairsData: Repair[] = [
+const repairsData: Omit<Repair, 'evaluation'>[] = [
   { 
     id: "REP-001", 
     customer: "John Doe", 
@@ -19,7 +19,6 @@ const repairsData: Repair[] = [
     problemDescription: "La pantalla está rota y no responde al tacto en la parte superior.",
     imeiOrSn: "356712345678901",
     password: "1234",
-    evaluation: "Requiere reemplazo completo del panel frontal. La batería parece estar en buen estado.",
   },
   { 
     id: "REP-002", 
@@ -31,7 +30,6 @@ const repairsData: Repair[] = [
     deviceType: "Celular",
     problemDescription: "La batería se descarga muy rápido, dura menos de 4 horas.",
     imeiOrSn: "359876543210987",
-    evaluation: "Cambio de batería realizado. El equipo ahora mantiene la carga correctamente.",
   },
   { 
     id: "REP-003", 
@@ -44,11 +42,10 @@ const repairsData: Repair[] = [
     problemDescription: "El equipo se reinicia constantemente y no pasa del logo de Google.",
     imeiOrSn: "351234567890123",
     password: "No tiene",
-    evaluation: "Pendiente de diagnóstico. Posible fallo de software o placa base.",
   },
   { 
     id: "REP-004", 
-    customer: "Mary Johnson", _
+    customer: "Mary Johnson", 
     device: "MacBook Pro 14\"", 
     technician: "David Williams", 
     status: "Confirmado", 
@@ -56,7 +53,6 @@ const repairsData: Repair[] = [
     deviceType: "Laptop",
     problemDescription: "El teclado no funciona después de un derrame de líquido.",
     imeiOrSn: "C02G1234H8J1",
-    evaluation: "Necesita cambio de Top Case. Se ha solicitado la pieza.",
   },
 ];
 
@@ -101,3 +97,5 @@ export default function SeedPage() {
         </div>
     );
 }
+
+    
