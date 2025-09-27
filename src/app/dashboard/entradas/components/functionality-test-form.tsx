@@ -1,14 +1,12 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import type { FunctionalityTestResults } from "@/services/repairs";
 
 const functionalityTestSchema = z.object({
@@ -80,7 +78,7 @@ export default function FunctionalityTestForm({ onSave, onCancel }: Functionalit
                             name={item.name}
                             render={({ field }) => (
                                 <FormItem className="flex items-center justify-between rounded-md border p-3">
-                                    <FormLabel className="font-normal">{item.label}</FormLabel>
+                                    <FormLabel className="font-normal flex-1">{item.label}</FormLabel>
                                     <FormControl>
                                         <RadioGroup
                                             onValueChange={field.onChange}
@@ -89,21 +87,21 @@ export default function FunctionalityTestForm({ onSave, onCancel }: Functionalit
                                         >
                                             <FormItem className="flex items-center space-x-2">
                                                 <FormControl>
-                                                    <RadioGroupItem value="ok" />
+                                                    <RadioGroupItem value="ok" id={`${item.name}-ok`} />
                                                 </FormControl>
-                                                <FormLabel className="font-normal text-green-600">OK</FormLabel>
+                                                <FormLabel htmlFor={`${item.name}-ok`} className="font-normal text-green-600">OK</FormLabel>
                                             </FormItem>
                                             <FormItem className="flex items-center space-x-2">
                                                 <FormControl>
-                                                    <RadioGroupItem value="fail" />
+                                                    <RadioGroupItem value="fail" id={`${item.name}-fail`}/>
                                                 </FormControl>
-                                                <FormLabel className="font-normal text-red-600">Falla</FormLabel>
+                                                <FormLabel htmlFor={`${item.name}-fail`} className="font-normal text-red-600">Falla</FormLabel>
                                             </FormItem>
                                             <FormItem className="flex items-center space-x-2">
                                                 <FormControl>
-                                                    <RadioGroupItem value="na" />
+                                                    <RadioGroupItem value="na" id={`${item.name}-na`}/>
                                                 </FormControl>
-                                                <FormLabel className="font-normal text-muted-foreground">N/A</FormLabel>
+                                                <FormLabel htmlFor={`${item.name}-na`} className="font-normal text-muted-foreground">N/A</FormLabel>
                                             </FormItem>
                                         </RadioGroup>
                                     </FormControl>
@@ -138,3 +136,5 @@ export default function FunctionalityTestForm({ onSave, onCancel }: Functionalit
         </Form>
     );
 }
+
+    

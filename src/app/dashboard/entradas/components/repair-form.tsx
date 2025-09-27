@@ -104,6 +104,7 @@ export default function RepairForm() {
   });
 
   const selectedDeviceType = form.watch("deviceType");
+  const selectedDevice = form.watch("device");
 
   useEffect(() => {
     if (selectedDeviceType && deviceData) {
@@ -118,9 +119,8 @@ export default function RepairForm() {
     }
   }, [selectedDeviceType, deviceData, form]);
 
-  const handleCustomerCreated = async (newCustomer: Customer) => {
-    const newCustomerWithId = { ...newCustomer, id: newCustomer.id || "temp-id" };
-    setCustomers(prev => [...prev, newCustomerWithId]);
+  const handleCustomerCreated = (newCustomer: Customer) => {
+    setCustomers(prev => [...prev, newCustomer]);
     form.setValue("customer", newCustomer.name);
     setCustomerDialogOpen(false);
     setCustomerPopoverOpen(false);
@@ -137,6 +137,13 @@ export default function RepairForm() {
       title: "Prueba Guardada",
       description: "Los resultados de la prueba de funciones han sido guardados.",
     });
+  }
+
+  const handleDeviceIsOn = (isOn: boolean) => {
+    setDeviceIsOn(isOn);
+    if (isOn) {
+        setFunctionalityTestOpen(true);
+    }
   }
 
   async function onSubmit(data: RepairFormValues) {
@@ -174,7 +181,7 @@ export default function RepairForm() {
   };
 
   return (
-    <Dialog>
+    <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
@@ -236,15 +243,13 @@ export default function RepairForm() {
                                   />
                                   <CommandList>
                                       <CommandEmpty>
-                                        <DialogTrigger asChild>
-                                          <Button 
-                                            variant="ghost" 
-                                            className="w-full text-left justify-start"
-                                            onClick={() => setCustomerDialogOpen(true)}
-                                          >
-                                            Crear nuevo cliente: "{newCustomerName}"
-                                          </Button>
-                                        </DialogTrigger>
+                                        <Button 
+                                          variant="ghost" 
+                                          className="w-full text-left justify-start"
+                                          onClick={() => setCustomerDialogOpen(true)}
+                                        >
+                                          Crear nuevo cliente: "{newCustomerName}"
+                                        </Button>
                                       </CommandEmpty>
                                       <CommandGroup>
                                           {customers.map((customer) => (
@@ -347,89 +352,73 @@ export default function RepairForm() {
                   )}
               />
 
-              <FormField
-                control={form.control}
-                name="problemDescription"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Descripción del Problema</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Ej: La pantalla está rota y la batería no carga..."
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid md:grid-cols-2 gap-8 items-start">
-                  <div className="space-y-8">
-                    <FormField
-                        control={form.control}
-                        name="imeiOrSn"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>IMEI o Número de Serie</FormLabel>
-                            <FormControl>
-                            <Input placeholder="(Opcional)" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Contraseña del Equipo</FormLabel>
-                            <FormControl>
-                            <Input placeholder="(Opcional)" {...field} />
-                            </FormControl>
-                            <FormDescription>Dejar en blanco si no tiene.</FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                  </div>
-                  <div className="space-y-4 rounded-lg border p-4">
-                      <div className="flex items-center space-x-2">
-                        <Switch id="device-on-switch" checked={deviceIsOn} onCheckedChange={setDeviceIsOn} />
-                        <Label htmlFor="device-on-switch">¿El equipo enciende?</Label>
+              { selectedDevice && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="problemDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Descripción del Problema</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Ej: La pantalla está rota y la batería no carga..."
+                            className="resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid md:grid-cols-2 gap-8 items-start">
+                      <div className="space-y-8">
+                        <FormField
+                            control={form.control}
+                            name="imeiOrSn"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>IMEI o Número de Serie</FormLabel>
+                                <FormControl>
+                                <Input placeholder="(Opcional)" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Contraseña del Equipo</FormLabel>
+                                <FormControl>
+                                <Input placeholder="(Opcional)" {...field} />
+                                </FormControl>
+                                <FormDescription>Dejar en blanco si no tiene.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Si el equipo enciende, realice una prueba de funcionalidades para un mejor diagnóstico.
-                      </p>
-                       <Dialog open={functionalityTestOpen} onOpenChange={setFunctionalityTestOpen}>
-                        <DialogTrigger asChild>
-                            <Button type="button" disabled={!deviceIsOn} className="w-full">
-                                <Wrench className="mr-2 h-4 w-4" />
-                                Realizar Prueba de Funciones
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Prueba de Funciones del Equipo</DialogTitle>
-                                <DialogDescription>
-                                Marque las casillas correspondientes al estado de cada función.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <FunctionalityTestForm 
-                                onSave={handleFunctionalityTestSave}
-                                onCancel={() => setFunctionalityTestOpen(false)}
-                            />
-                        </DialogContent>
-                       </Dialog>
-                      {form.watch("functionalityTest") && (
-                        <div className="text-sm text-green-600 flex items-center gap-2">
-                          <Check className="h-4 w-4" />
-                          <span>Prueba de funciones completada.</span>
-                        </div>
-                      )}
+                      <div className="space-y-4 rounded-lg border p-4">
+                          <div className="flex items-center space-x-2">
+                            <Switch id="device-on-switch" checked={deviceIsOn} onCheckedChange={handleDeviceIsOn} />
+                            <Label htmlFor="device-on-switch">¿El equipo enciende?</Label>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Si el equipo enciende, realice una prueba de funcionalidades para un mejor diagnóstico.
+                          </p>
+                          {form.watch("functionalityTest") && (
+                            <div className="text-sm text-green-600 flex items-center gap-2">
+                              <Check className="h-4 w-4" />
+                              <span>Prueba de funciones completada.</span>
+                            </div>
+                          )}
+                      </div>
                   </div>
-              </div>
+                </>
+              )}
             </div>
           )}
 
@@ -446,7 +435,7 @@ export default function RepairForm() {
                   Siguiente
                 </Button>
               ) : (
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading || !selectedDevice}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {loading ? "Guardando..." : "Registrar Entrada"}
                 </Button>
@@ -456,19 +445,38 @@ export default function RepairForm() {
         </form>
       </Form>
       
-      <DialogContent onOpenChange={setCustomerDialogOpen}>
-          <DialogHeader>
-            <DialogTitle>Crear Nuevo Cliente</DialogTitle>
-            <DialogDescription>
-              Complete los detalles del nuevo cliente. Nombre y teléfono son obligatorios.
-            </DialogDescription>
-          </DialogHeader>
-          <CustomerForm 
-            initialName={newCustomerName}
-            onSave={handleCustomerCreated} 
-            onCancel={() => setCustomerDialogOpen(false)} 
-          />
-      </DialogContent>
-    </Dialog>
+      <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Cliente</DialogTitle>
+              <DialogDescription>
+                Complete los detalles del nuevo cliente. Nombre y teléfono son obligatorios.
+              </DialogDescription>
+            </DialogHeader>
+            <CustomerForm 
+              initialName={newCustomerName}
+              onSave={handleCustomerCreated} 
+              onCancel={() => setCustomerDialogOpen(false)} 
+            />
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={functionalityTestOpen} onOpenChange={setFunctionalityTestOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Prueba de Funciones del Equipo</DialogTitle>
+                <DialogDescription>
+                  Seleccione el estado de cada función.
+                </DialogDescription>
+            </DialogHeader>
+            <FunctionalityTestForm 
+                onSave={handleFunctionalityTestSave}
+                onCancel={() => setFunctionalityTestOpen(false)}
+            />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
+
+    

@@ -3,18 +3,20 @@ import { collection, getDocs, doc, setDoc, writeBatch, getDoc, addDoc } from "fi
 
 export type RepairStatus = "Cotización" | "Confirmado" | "En Reparación" | "Reparado" | "Entregado";
 
+export type FunctionalityTestResult = "ok" | "fail" | "na";
+
 export type FunctionalityTestResults = {
-    cameraFront: "ok" | "fail" | "na";
-    cameraBack: "ok" | "fail" | "na";
-    chargingPort: "ok" | "fail" | "na";
-    screen: "ok" | "fail" | "na";
-    touch: "ok" | "fail" | "na";
-    buttons: "ok" | "fail" | "na";
-    earpiece: "ok" | "fail" | "na";
-    speaker: "ok" | "fail" | "na";
-    microphone: "ok" | "fail" | "na";
-    wifi: "ok" | "fail" | "na";
-    biometrics: "ok" | "fail" | "na";
+    cameraFront: FunctionalityTestResult;
+    cameraBack: FunctionalityTestResult;
+    chargingPort: FunctionalityTestResult;
+    screen: FunctionalityTestResult;
+    touch: FunctionalityTestResult;
+    buttons: FunctionalityTestResult;
+    earpiece: FunctionalityTestResult;
+    speaker: FunctionalityTestResult;
+    microphone: FunctionalityTestResult;
+    wifi: FunctionalityTestResult;
+    biometrics: FunctionalityTestResult;
     other?: string;
 };
 
@@ -82,3 +84,5 @@ export async function seedRepairs(repairs: Repair[]) {
 
     await batch.commit();
 }
+
+    
