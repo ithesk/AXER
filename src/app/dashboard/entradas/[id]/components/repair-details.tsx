@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Repair, RepairStatus, updateRepair, FunctionalityTestResult } from "@/services/repairs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Smartphone, Wrench, Calendar, KeyRound, HardDrive, FileText, ClipboardPenLine, ListChecks, Check, ChevronsUpDown, Loader2 } from "lucide-react";
@@ -41,7 +41,12 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [technicianPopoverOpen, setTechnicianPopoverOpen] = useState(false);
     const [statusPopoverOpen, setStatusPopoverOpen] = useState(false);
+    const [formattedEntryDate, setFormattedEntryDate] = useState("");
     const { toast } = useToast();
+
+    useEffect(() => {
+        setFormattedEntryDate(new Date(repair.entryDate).toLocaleString());
+    }, [repair.entryDate]);
 
     const handleSave = async (field: keyof Repair, value: any) => {
         setIsLoading(true);
@@ -235,7 +240,7 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                                 <Calendar className="h-5 w-5 text-muted-foreground" />
                                 <div>
                                     <p className="text-muted-foreground">Fecha y Hora de Ingreso</p>
-                                    <p className="font-medium">{new Date(repair.entryDate).toLocaleString()}</p>
+                                    <p className="font-medium">{formattedEntryDate || "Cargando..."}</p>
                                 </div>
                             </div>
                             <hr className="my-2" />
