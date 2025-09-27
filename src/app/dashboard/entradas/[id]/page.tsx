@@ -2,10 +2,28 @@ import { getRepairById } from "@/services/repairs";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { notFound } from "next/navigation";
-import { User, Smartphone, Wrench, Calendar, ArrowLeft, KeyRound, HardDrive, FileText, ClipboardPenLine } from "lucide-react";
+import { User, Smartphone, Wrench, Calendar, ArrowLeft, KeyRound, HardDrive, FileText, ClipboardPenLine, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import RepairStatusProgress from "../components/repair-status-progress";
+import { Badge } from "@/components/ui/badge";
+import type { FunctionalityTestResult } from "@/services/repairs";
+import type { BadgeVariant } from "@/components/ui/badge";
+
+const functionalityTestItems: { name: keyof Omit<import("@/services/repairs").FunctionalityTestResults, 'other'>; label: string }[] = [
+    { name: "cameraFront", label: "Cámara Frontal" },
+    { name: "cameraBack", label: "Cámara Trasera" },
+    { name: "chargingPort", label: "Puerto de Carga" },
+    { name: "screen", label: "Pantalla (Brillo/Colores)" },
+    { name: "touch", label: "Táctil" },
+    { name: "buttons", label: "Botones (Volumen/Encendido)" },
+    { name: "earpiece", label: "Altavoz Auricular" },
+    { name: "speaker", label: "Altavoz Principal" },
+    { name: "microphone", label: "Micrófono" },
+    { name: "wifi", label: "Wi-Fi / Red" },
+    { name: "biometrics", label: "Face ID / Lector de Huella" },
+];
+
 
 export default async function RepairDetailPage({ params }: { params: { id: string } }) {
   const repair = await getRepairById(params.id);
@@ -13,6 +31,24 @@ export default async function RepairDetailPage({ params }: { params: { id: strin
   if (!repair) {
     notFound();
   }
+  
+  const getStatusVariant = (status: FunctionalityTestResult): BadgeVariant => {
+    switch (status) {
+        case "ok": return "default";
+        case "fail": return "destructive";
+        case "na": return "secondary";
+        default: return "outline";
+    }
+  }
+
+  const getStatusLabel = (status: FunctionalityTestResult): string => {
+    switch(status) {
+      case "ok": return "OK";
+      case "fail": return "Falla";
+      case "na": return "N/A";
+    }
+  }
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,6 +80,38 @@ export default async function RepairDetailPage({ params }: { params: { id: strin
             <h2 className="text-xl font-bold font-headline flex items-center gap-2"><ClipboardPenLine className="h-5 w-5" /> Evaluación Técnica</h2>
             <p className="text-muted-foreground">{repair.evaluation || "Pendiente de evaluación."}</p>
           </div>
+
+          {repair.functionalityTest && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-headline flex items-center gap-2">
+                  <ListChecks className="h-5 w-5" />
+                  Prueba de Funciones
+                </CardTitle>
+                 <CardDescription>Resultados de la prueba de funciones realizada al momento del ingreso.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                  {functionalityTestItems.map(item => {
+                      const result = repair.functionalityTest![item.name];
+                      return (
+                          <div key={item.name} className="flex items-center justify-between">
+                              <span>{item.label}</span>
+                              <Badge variant={getStatusVariant(result)} className="capitalize w-14 justify-center">{getStatusLabel(result)}</Badge>
+                          </div>
+                      )
+                  })}
+                </div>
+                {repair.functionalityTest.other && (
+                    <div className="pt-2">
+                        <h4 className="text-sm font-medium">Otras Observaciones:</h4>
+                        <p className="text-sm text-muted-foreground">{repair.functionalityTest.other}</p>
+                    </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
         </div>
 
         <div className="grid gap-6">
