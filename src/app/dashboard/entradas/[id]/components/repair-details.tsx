@@ -7,23 +7,22 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { User, Smartphone, Wrench, Calendar, KeyRound, HardDrive, FileText, ClipboardPenLine, ListChecks, Check, ChevronsUpDown, Loader2, Pencil, MessageSquarePlus, DollarSign, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RepairStatusProgress from "../../components/repair-status-progress";
-import { Badge, BadgeVariant } from "@/components/ui/badge";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { getDeviceData, DeviceData } from "@/services/devices";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import FunctionalityTestForm from "../../components/functionality-test-form";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const functionalityTestItems: { name: keyof Omit<import("@/services/repairs").FunctionalityTestResults, 'other'>; label: string }[] = [
     { name: "cameraFront", label: "Cámara Frontal" },
@@ -77,7 +76,6 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     const [newEvaluationNote, setNewEvaluationNote] = useState("");
 
     const [technicianPopoverOpen, setTechnicianPopoverOpen] = useState(false);
-    const [functionalityTestOpen, setFunctionalityTestOpen] = useState(false);
     const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
     const [isEditingLabor, setIsEditingLabor] = useState(false);
     const [laborCost, setLaborCost] = useState(repair.quote?.labor || 0);
@@ -95,7 +93,9 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
 
     useEffect(() => {
         setIsClient(true);
-        setFormattedEntryDate(new Date(repair.entryDate).toLocaleString());
+        if (repair.entryDate) {
+            setFormattedEntryDate(new Date(repair.entryDate).toLocaleString());
+        }
     }, [repair.entryDate]);
     
     const handleSave = async (field: keyof Repair, value: any, successMessage?: string) => {
@@ -123,9 +123,10 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
         }
     };
 
-    const handleFunctionalityTestSave = async (results: FunctionalityTestResults) => {
-        await handleSave('functionalityTest', results, "La prueba de funciones ha sido actualizada.");
-        setFunctionalityTestOpen(false);
+    const handleFunctionalityTestUpdate = async (item: keyof FunctionalityTestResults, value: FunctionalityTestResult | string) => {
+        const currentTest = repair.functionalityTest || {} as FunctionalityTestResults;
+        const updatedTest = { ...currentTest, [item]: value };
+        await handleSave('functionalityTest', updatedTest, "La prueba de funciones ha sido actualizada.");
     }
 
     const handleAddEvaluationNote = async () => {
@@ -181,23 +182,6 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
         });
         setIsEditingLabor(false);
     };
-
-    const getStatusVariant = (status: FunctionalityTestResult): BadgeVariant => {
-        switch (status) {
-            case "ok": return "default";
-            case "fail": return "destructive";
-            case "na": return "secondary";
-            default: return "outline";
-        }
-    }
-
-    const getStatusLabel = (status: FunctionalityTestResult): string => {
-        switch(status) {
-            case "ok": return "OK";
-            case "fail": return "Falla";
-            case "na": return "N/A";
-        }
-    }
 
     const handleStatusUpdate = () => {
         const nextStatus = nextStatusMap[repair.status];
@@ -327,7 +311,7 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                                             <div key={index} className="flex flex-col">
                                                 <div className="flex justify-between items-center">
                                                     <p className="text-xs font-semibold">{entry.author}</p>
-                                                    <p className="text-xs text-muted-foreground">{isClient ? new Date(entry.date).toLocaleString() : ''}</p>
+                                                    {isClient && <p className="text-xs text-muted-foreground">{new Date(entry.date).toLocaleString()}</p>}
                                                 </div>
                                                 <p className="text-sm text-muted-foreground mt-1">{entry.note}</p>
                                             </div>
@@ -359,41 +343,71 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                         </Card>
 
 
-                        {repair.functionalityTest && (
+                        {repair.functionalityTest ? (
                             <Card>
                                 <CardHeader>
-                                    <div className="flex justify-between items-center">
-                                        <CardTitle className="font-headline flex items-center gap-2">
-                                            <ListChecks className="h-5 w-5" />
-                                            Prueba de Funciones
-                                        </CardTitle>
-                                        <Button variant="outline" size="sm" onClick={() => setFunctionalityTestOpen(true)}>
-                                            <Pencil className="mr-2 h-3 w-3" />
-                                            Editar
-                                        </Button>
-                                    </div>
-                                    <CardDescription>Resultados de la prueba de funciones realizada al momento del ingreso.</CardDescription>
+                                    <CardTitle className="font-headline flex items-center gap-2">
+                                        <ListChecks className="h-5 w-5" />
+                                        Prueba de Funciones
+                                    </CardTitle>
+                                    <CardDescription>Resultados de la prueba de funciones. Los cambios se guardan automáticamente.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm">
-                                        {functionalityTestItems.map(item => {
-                                            const result = repair.functionalityTest![item.name];
-                                            return (
-                                                <div key={item.name} className="flex items-center justify-between">
-                                                    <span>{item.label}</span>
-                                                    <Badge variant={getStatusVariant(result)} className="capitalize w-14 justify-center">{getStatusLabel(result)}</Badge>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                    {repair.functionalityTest.other && (
-                                        <div className="pt-2">
-                                            <h4 className="text-sm font-medium">Otras Observaciones:</h4>
-                                            <p className="text-sm text-muted-foreground">{repair.functionalityTest.other}</p>
+                                     <div className="space-y-4">
+                                        {functionalityTestItems.map(item => (
+                                             <div key={item.name} className="flex items-center justify-between rounded-md border p-3">
+                                                 <Label className="font-normal flex-1">{item.label}</Label>
+                                                 <RadioGroup
+                                                     value={repair.functionalityTest?.[item.name] || 'na'}
+                                                     onValueChange={(value: FunctionalityTestResult) => handleFunctionalityTestUpdate(item.name, value)}
+                                                     className="flex items-center space-x-4"
+                                                     disabled={isLoading}
+                                                 >
+                                                     <FormItem className="flex items-center space-x-2">
+                                                         <FormControl>
+                                                             <RadioGroupItem value="ok" id={`${item.name}-ok`} />
+                                                         </FormControl>
+                                                         <Label htmlFor={`${item.name}-ok`} className="font-normal text-green-600">OK</Label>
+                                                     </FormItem>
+                                                     <FormItem className="flex items-center space-x-2">
+                                                         <FormControl>
+                                                             <RadioGroupItem value="fail" id={`${item.name}-fail`}/>
+                                                         </FormControl>
+                                                         <Label htmlFor={`${item.name}-fail`} className="font-normal text-red-600">Falla</Label>
+                                                     </FormItem>
+                                                     <FormItem className="flex items-center space-x-2">
+                                                         <FormControl>
+                                                             <RadioGroupItem value="na" id={`${item.name}-na`}/>
+                                                         </FormControl>
+                                                         <Label htmlFor={`${item.name}-na`} className="font-normal text-muted-foreground">N/A</Label>
+                                                     </FormItem>
+                                                 </RadioGroup>
+                                             </div>
+                                        ))}
+                                        <div className="space-y-2">
+                                            <Label>Otras Observaciones</Label>
+                                            <Textarea
+                                                defaultValue={repair.functionalityTest.other}
+                                                onBlur={(e) => handleFunctionalityTestUpdate('other', e.target.value)}
+                                                placeholder="Describa cualquier otra falla o detalle encontrado..."
+                                                disabled={isLoading}
+                                            />
                                         </div>
-                                    )}
+                                    </div>
                                 </CardContent>
                             </Card>
+                        ) : (
+                           <Card>
+                                <CardHeader>
+                                     <CardTitle className="font-headline flex items-center gap-2">
+                                        <ListChecks className="h-5 w-5" />
+                                        Prueba de Funciones
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground text-center py-4">No se realizó una prueba de funciones al ingresar el equipo.</p>
+                                </CardContent>
+                           </Card>
                         )}
 
                     </div>
@@ -480,22 +494,6 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                 </div>
             </div>
 
-            <Dialog open={functionalityTestOpen} onOpenChange={setFunctionalityTestOpen}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Editar Prueba de Funciones</DialogTitle>
-                        <DialogDescription>
-                            Modifique el estado de cada función según sea necesario.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <FunctionalityTestForm 
-                        initialData={repair.functionalityTest}
-                        onSave={handleFunctionalityTestSave}
-                        onCancel={() => setFunctionalityTestOpen(false)}
-                    />
-                </DialogContent>
-            </Dialog>
-
              <Dialog open={quoteDialogOpen} onOpenChange={setQuoteDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -539,4 +537,5 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
             </Dialog>
         </>
     );
-}
+
+    
