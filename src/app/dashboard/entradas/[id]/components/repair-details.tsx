@@ -68,6 +68,8 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     const [formattedEntryDate, setFormattedEntryDate] = useState("");
     const { toast } = useToast();
 
+    const isTechnicianAssigned = repair.technician !== "No Asignado";
+
     useEffect(() => {
         setFormattedEntryDate(new Date(repair.entryDate).toLocaleString());
     }, [repair.entryDate]);
@@ -103,7 +105,7 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     }
 
     const handleAddEvaluationNote = async () => {
-        if (!newEvaluationNote.trim()) return;
+        if (!newEvaluationNote.trim() || !isTechnicianAssigned) return;
         setIsLoading(true);
         try {
             const newEntry: EvaluationEntry = {
@@ -227,18 +229,24 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                                         <p className="text-sm text-muted-foreground text-center py-4">No hay notas en la bitácora aún.</p>
                                     )}
                                 </div>
-                                <div className="flex gap-2">
-                                    <Textarea 
-                                        value={newEvaluationNote}
-                                        onChange={(e) => setNewEvaluationNote(e.target.value)}
-                                        placeholder="Añadir una nueva nota a la bitácora..."
-                                        rows={2}
-                                        className="flex-1"
-                                    />
-                                    <Button onClick={handleAddEvaluationNote} disabled={isLoading || !newEvaluationNote.trim()} size="icon" className="shrink-0">
-                                        <MessageSquarePlus className="h-5 w-5"/>
-                                        <span className="sr-only">Añadir Nota</span>
-                                    </Button>
+                                <div className="space-y-2">
+                                    <div className="flex gap-2">
+                                        <Textarea 
+                                            value={newEvaluationNote}
+                                            onChange={(e) => setNewEvaluationNote(e.target.value)}
+                                            placeholder={isTechnicianAssigned ? "Añadir una nueva nota a la bitácora..." : "Asigne un técnico para añadir notas."}
+                                            rows={2}
+                                            className="flex-1"
+                                            disabled={!isTechnicianAssigned || isLoading}
+                                        />
+                                        <Button onClick={handleAddEvaluationNote} disabled={isLoading || !newEvaluationNote.trim() || !isTechnicianAssigned} size="icon" className="shrink-0">
+                                            <MessageSquarePlus className="h-5 w-5"/>
+                                            <span className="sr-only">Añadir Nota</span>
+                                        </Button>
+                                    </div>
+                                    {!isTechnicianAssigned && (
+                                        <p className="text-xs text-muted-foreground">Debe asignar un técnico para poder registrar notas en la bitácora.</p>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
