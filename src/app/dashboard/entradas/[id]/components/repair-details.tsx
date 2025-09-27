@@ -23,6 +23,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const functionalityTestItems: { name: keyof Omit<import("@/services/repairs").FunctionalityTestResults, 'other'>; label: string }[] = [
     { name: "cameraFront", label: "Cámara Frontal" },
@@ -45,8 +46,13 @@ const partFormSchema = z.object({
 
 type PartFormValues = z.infer<typeof partFormSchema>;
 
+const availableTechnicians = [
+    { name: "David Williams", avatar: "https://picsum.photos/seed/avatar4/40/40" },
+    { name: "Juan Perez", avatar: "https://picsum.photos/seed/avatar6/40/40" },
+    { name: "Maria Rodriguez", avatar: "https://picsum.photos/seed/avatar7/40/40" },
+    { name: "No Asignado", avatar: "" },
+];
 
-const availableTechnicians = ["David Williams", "Juan Perez", "Maria Rodriguez", "No Asignado"];
 const repairStatuses: RepairStatus[] = ["Cotización", "Confirmado", "En Reparación", "Reparado", "Entregado"];
 
 const nextStatusMap: Partial<Record<RepairStatus, RepairStatus>> = {
@@ -191,6 +197,7 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     };
 
     const nextStatusLabel = nextStatusLabels[repair.status];
+    const technicianAvatar = availableTechnicians.find(t => t.name === repair.technician)?.avatar;
 
     return (
         <>
@@ -423,29 +430,37 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                                     <Wrench className="h-5 w-5 text-muted-foreground" />
                                     <div>
                                         <p className="text-muted-foreground">Técnico Asignado</p>
-                                        <Popover open={technicianPopoverOpen} onOpenChange={setTechnicianPopoverOpen}>
-                                            <PopoverTrigger asChild>
-                                                <Button variant="link" role="combobox" aria-expanded={technicianPopoverOpen} className="p-0 font-medium h-auto" disabled={isLoading}>{repair.technician}</Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[200px] p-0">
-                                                <Command>
-                                                    <CommandGroup>
-                                                        {availableTechnicians.map((tech) => (
-                                                            <CommandItem
-                                                                key={tech}
-                                                                onSelect={() => {
-                                                                    handleSave('technician', tech, 'Técnico asignado.');
-                                                                    setTechnicianPopoverOpen(false);
-                                                                }}
-                                                            >
-                                                                <Check className={cn("mr-2 h-4 w-4", repair.technician === tech ? "opacity-100" : "opacity-0")} />
-                                                                {tech}
-                                                            </CommandItem>
-                                                        ))}
-                                                    </CommandGroup>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
+                                        <div className="flex items-center gap-2">
+                                            {technicianAvatar && (
+                                                <Avatar className="h-6 w-6">
+                                                    <AvatarImage src={technicianAvatar} />
+                                                    <AvatarFallback>{repair.technician.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                </Avatar>
+                                            )}
+                                            <Popover open={technicianPopoverOpen} onOpenChange={setTechnicianPopoverOpen}>
+                                                <PopoverTrigger asChild>
+                                                    <Button variant="link" role="combobox" aria-expanded={technicianPopoverOpen} className="p-0 font-medium h-auto" disabled={isLoading}>{repair.technician}</Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-[200px] p-0">
+                                                    <Command>
+                                                        <CommandGroup>
+                                                            {availableTechnicians.map((tech) => (
+                                                                <CommandItem
+                                                                    key={tech.name}
+                                                                    onSelect={() => {
+                                                                        handleSave('technician', tech.name, 'Técnico asignado.');
+                                                                        setTechnicianPopoverOpen(false);
+                                                                    }}
+                                                                >
+                                                                    <Check className={cn("mr-2 h-4 w-4", repair.technician === tech.name ? "opacity-100" : "opacity-0")} />
+                                                                    {tech.name}
+                                                                </CommandItem>
+                                                            ))}
+                                                        </CommandGroup>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -533,3 +548,4 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     );
 
     
+
