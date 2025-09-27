@@ -34,13 +34,15 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { addRepair } from "@/services/repairs";
+import { addRepair, FunctionalityTestResults } from "@/services/repairs";
 import { useState, useEffect } from "react";
-import { Loader2, ArrowLeft, ChevronsUpDown, Check } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronsUpDown, Check, Wrench } from "lucide-react";
 import { getDeviceData, DeviceData } from "@/services/devices";
 import { getCustomers, addCustomer, Customer } from "@/services/customers";
 import { cn } from "@/lib/utils";
 import CustomerForm from "../../customers/components/customer-form";
+import { Switch } from "@/components/ui/switch";
+import FunctionalityTestForm from "./functionality-test-form";
 
 const repairFormSchema = z.object({
   customer: z.string().min(2, { message: "Debe seleccionar o crear un cliente." }),
@@ -52,6 +54,7 @@ const repairFormSchema = z.object({
   imeiOrSn: z.string().optional(),
   password: z.string().optional(),
   technician: z.string().optional(),
+  functionalityTest: z.custom<FunctionalityTestResults>().optional(),
 });
 
 type RepairFormValues = z.infer<typeof repairFormSchema>;
@@ -70,7 +73,9 @@ export default function RepairForm() {
   const [devicePopoverOpen, setDevicePopoverOpen] = useState(false);
   const [customerPopoverOpen, setCustomerPopoverOpen] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [functionalityTestOpen, setFunctionalityTestOpen] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState("");
+  const [deviceIsOn, setDeviceIsOn] = useState(false);
 
   const router = useRouter();
   const { toast } = useToast();
@@ -124,6 +129,15 @@ export default function RepairForm() {
     });
   };
 
+  const handleFunctionalityTestSave = (results: FunctionalityTestResults) => {
+    form.setValue("functionalityTest", results);
+    setFunctionalityTestOpen(false);
+    toast({
+      title: "Prueba Guardada",
+      description: "Los resultados de la prueba de funciones han sido guardados.",
+    });
+  }
+
   async function onSubmit(data: RepairFormValues) {
     setLoading(true);
     try {
@@ -159,7 +173,10 @@ export default function RepairForm() {
   };
 
   return (
-    <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+    <Dialog open={customerDialogOpen || functionalityTestOpen} onOpenChange={(open) => {
+      if (customerDialogOpen && !open) setCustomerDialogOpen(false);
+      if (functionalityTestOpen && !open) setFunctionalityTestOpen(false);
+    }}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
@@ -217,16 +234,17 @@ export default function RepairForm() {
                                       placeholder="Buscar cliente por nombre o teléfono..." 
                                       onValueChange={(currentValue) => {
                                         setNewCustomerName(currentValue);
-                                        // We don't set form value directly here to allow for creation flow
                                       }}
                                   />
                                   <CommandList>
                                       <CommandEmpty>
-                                        <DialogTrigger asChild>
-                                          <Button variant="ghost" className="w-full text-left justify-start">
-                                            Crear nuevo cliente: "{newCustomerName}"
-                                          </Button>
-                                        </DialogTrigger>
+                                        <Button 
+                                          variant="ghost" 
+                                          className="w-full text-left justify-start"
+                                          onClick={() => setCustomerDialogOpen(true)}
+                                        >
+                                          Crear nuevo cliente: "{newCustomerName}"
+                                        </Button>
                                       </CommandEmpty>
                                       <CommandGroup>
                                           {customers.map((customer) => (
@@ -346,34 +364,55 @@ export default function RepairForm() {
                   </FormItem>
                 )}
               />
-              <div className="grid md:grid-cols-2 gap-8">
-                  <FormField
-                      control={form.control}
-                      name="imeiOrSn"
-                      render={({ field }) => (
-                      <FormItem>
-                          <FormLabel>IMEI o Número de Serie</FormLabel>
-                          <FormControl>
-                          <Input placeholder="(Opcional)" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                      </FormItem>
+              <div className="grid md:grid-cols-2 gap-8 items-start">
+                  <div className="space-y-8">
+                    <FormField
+                        control={form.control}
+                        name="imeiOrSn"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>IMEI o Número de Serie</FormLabel>
+                            <FormControl>
+                            <Input placeholder="(Opcional)" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Contraseña del Equipo</FormLabel>
+                            <FormControl>
+                            <Input placeholder="(Opcional)" {...field} />
+                            </FormControl>
+                            <FormDescription>Dejar en blanco si no tiene.</FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                  </div>
+                  <div className="space-y-4 rounded-lg border p-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch id="device-on-switch" checked={deviceIsOn} onCheckedChange={setDeviceIsOn} />
+                        <Label htmlFor="device-on-switch">¿El equipo enciende?</Label>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Si el equipo enciende, realice una prueba de funcionalidades para un mejor diagnóstico.
+                      </p>
+                      <Button type="button" onClick={() => setFunctionalityTestOpen(true)} disabled={!deviceIsOn} className="w-full">
+                        <Wrench className="mr-2 h-4 w-4" />
+                        Realizar Prueba de Funciones
+                      </Button>
+                      {form.watch("functionalityTest") && (
+                        <div className="text-sm text-green-600 flex items-center gap-2">
+                          <Check className="h-4 w-4" />
+                          <span>Prueba de funciones completada.</span>
+                        </div>
                       )}
-                  />
-                  <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                      <FormItem>
-                          <FormLabel>Contraseña del Equipo</FormLabel>
-                          <FormControl>
-                          <Input placeholder="(Opcional)" {...field} />
-                          </FormControl>
-                          <FormDescription>Dejar en blanco si no tiene.</FormDescription>
-                          <FormMessage />
-                      </FormItem>
-                      )}
-                  />
+                  </div>
               </div>
             </div>
           )}
@@ -400,19 +439,37 @@ export default function RepairForm() {
           </div>
         </form>
       </Form>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Crear Nuevo Cliente</DialogTitle>
-          <DialogDescription>
-            Complete los detalles del nuevo cliente. Nombre y teléfono son obligatorios.
-          </DialogDescription>
-        </DialogHeader>
-        <CustomerForm 
-          initialName={newCustomerName}
-          onSave={handleCustomerCreated} 
-          onCancel={() => setCustomerDialogOpen(false)} 
-        />
-      </DialogContent>
+      
+      {customerDialogOpen && (
+        <DialogContent onOpenChange={setCustomerDialogOpen}>
+          <DialogHeader>
+            <DialogTitle>Crear Nuevo Cliente</DialogTitle>
+            <DialogDescription>
+              Complete los detalles del nuevo cliente. Nombre y teléfono son obligatorios.
+            </DialogDescription>
+          </DialogHeader>
+          <CustomerForm 
+            initialName={newCustomerName}
+            onSave={handleCustomerCreated} 
+            onCancel={() => setCustomerDialogOpen(false)} 
+          />
+        </DialogContent>
+      )}
+
+      {functionalityTestOpen && (
+        <DialogContent onOpenChange={setFunctionalityTestOpen}>
+          <DialogHeader>
+            <DialogTitle>Prueba de Funciones del Equipo</DialogTitle>
+            <DialogDescription>
+              Marque las casillas correspondientes al estado de cada función.
+            </DialogDescription>
+          </DialogHeader>
+          <FunctionalityTestForm 
+            onSave={handleFunctionalityTestSave}
+            onCancel={() => setFunctionalityTestOpen(false)}
+          />
+        </DialogContent>
+      )}
     </Dialog>
   );
 }
