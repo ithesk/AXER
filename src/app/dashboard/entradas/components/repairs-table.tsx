@@ -17,10 +17,13 @@ type ColumnVisibility = {
   id: boolean;
   customer: boolean;
   device: boolean;
+  deviceType: boolean;
   problemDescription: boolean;
   technician: boolean;
   entryDate: boolean;
   status: boolean;
+  imeiOrSn: boolean;
+  totalQuote: boolean;
 }
 
 const statusFilters: RepairStatus[] = ["Cotización", "Confirmado", "En Reparación", "Reparado", "Entregado"];
@@ -41,6 +44,9 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
     technician: true,
     entryDate: true,
     status: true,
+    deviceType: false,
+    imeiOrSn: false,
+    totalQuote: false,
   });
   const router = useRouter();
 
@@ -59,9 +65,16 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
   const filteredRepairs = (initialRepairs || [])
     .filter(repair => activeTab === "Todas" || repair.status === activeTab)
     .filter(repair =>
-      Object.values(repair).some(value =>
-        String(value).toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      Object.values(repair).some(value => {
+        if (typeof value === 'object' && value !== null) {
+            // Handle nested objects like 'quote'
+            if ('total' in value) {
+                return String(value.total).toLowerCase().includes(searchTerm.toLowerCase());
+            }
+            return false;
+        }
+        return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+      })
     );
 
   const getBadgeVariant = (status: RepairStatus): BadgeVariant => {
@@ -98,9 +111,12 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
         {columnVisibility.id && <TableCell className="font-medium">{repair.id}</TableCell>}
         {columnVisibility.customer && <TableCell>{repair.customer}</TableCell>}
         {columnVisibility.device && <TableCell>{repair.device}</TableCell>}
+        {columnVisibility.deviceType && <TableCell>{repair.deviceType}</TableCell>}
         {columnVisibility.problemDescription && <TableCell className="truncate max-w-xs">{repair.problemDescription}</TableCell>}
         {columnVisibility.technician && <TableCell>{repair.technician}</TableCell>}
         {columnVisibility.entryDate && <TableCell>{repair.entryDate.split('T')[0]}</TableCell>}
+        {columnVisibility.imeiOrSn && <TableCell>{repair.imeiOrSn || 'N/A'}</TableCell>}
+        {columnVisibility.totalQuote && <TableCell className="text-right">${repair.quote?.total.toFixed(2) || '0.00'}</TableCell>}
         {columnVisibility.status && <TableCell>
           <Badge variant={getBadgeVariant(repair.status)}>
             {repair.status}
@@ -149,9 +165,12 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                       <DropdownMenuCheckboxItem checked={columnVisibility.id} onCheckedChange={() => toggleColumn('id')}>ID de Reparación</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={columnVisibility.customer} onCheckedChange={() => toggleColumn('customer')}>Cliente</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={columnVisibility.device} onCheckedChange={() => toggleColumn('device')}>Equipo</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={columnVisibility.deviceType} onCheckedChange={() => toggleColumn('deviceType')}>Tipo de Equipo</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={columnVisibility.problemDescription} onCheckedChange={() => toggleColumn('problemDescription')}>Falla Reportada</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={columnVisibility.technician} onCheckedChange={() => toggleColumn('technician')}>Técnico Asignado</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={columnVisibility.entryDate} onCheckedChange={() => toggleColumn('entryDate')}>Fecha de Ingreso</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={columnVisibility.imeiOrSn} onCheckedChange={() => toggleColumn('imeiOrSn')}>IMEI/SN</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={columnVisibility.totalQuote} onCheckedChange={() => toggleColumn('totalQuote')}>Total Cotizado</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={columnVisibility.status} onCheckedChange={() => toggleColumn('status')}>Estado</DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -179,9 +198,12 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                     {columnVisibility.id && <TableHead>ID</TableHead>}
                     {columnVisibility.customer && <TableHead>Cliente</TableHead>}
                     {columnVisibility.device && <TableHead>Equipo</TableHead>}
+                    {columnVisibility.deviceType && <TableHead>Tipo</TableHead>}
                     {columnVisibility.problemDescription && <TableHead>Falla Reportada</TableHead>}
                     {columnVisibility.technician && <TableHead>Técnico</TableHead>}
                     {columnVisibility.entryDate && <TableHead>Ingreso</TableHead>}
+                    {columnVisibility.imeiOrSn && <TableHead>IMEI/SN</TableHead>}
+                    {columnVisibility.totalQuote && <TableHead className="text-right">Cotización</TableHead>}
                     {columnVisibility.status && <TableHead>Estado</TableHead>}
                   </TableRow>
                 </TableHeader>
