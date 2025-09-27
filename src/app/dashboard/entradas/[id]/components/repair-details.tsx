@@ -17,6 +17,7 @@ import { getDeviceData, DeviceData } from "@/services/devices";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import FunctionalityTestForm from "../../components/functionality-test-form";
+import { Label } from "@/components/ui/label";
 
 const functionalityTestItems: { name: keyof Omit<import("@/services/repairs").FunctionalityTestResults, 'other'>; label: string }[] = [
     { name: "cameraFront", label: "Cámara Frontal" },
