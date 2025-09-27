@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -66,11 +67,13 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     const [functionalityTestOpen, setFunctionalityTestOpen] = useState(false);
 
     const [formattedEntryDate, setFormattedEntryDate] = useState("");
+    const [isClient, setIsClient] = useState(false);
     const { toast } = useToast();
 
     const isTechnicianAssigned = repair.technician !== "No Asignado";
 
     useEffect(() => {
+        setIsClient(true);
         setFormattedEntryDate(new Date(repair.entryDate).toLocaleString());
     }, [repair.entryDate]);
     
@@ -220,7 +223,7 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                                             <div key={index} className="flex flex-col">
                                                 <div className="flex justify-between items-center">
                                                     <p className="text-xs font-semibold">{entry.author}</p>
-                                                    <p className="text-xs text-muted-foreground">{new Date(entry.date).toLocaleString()}</p>
+                                                    <p className="text-xs text-muted-foreground">{isClient ? new Date(entry.date).toLocaleString() : ''}</p>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground mt-1">{entry.note}</p>
                                             </div>
