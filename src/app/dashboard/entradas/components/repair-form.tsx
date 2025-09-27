@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import CustomerForm from "../../customers/components/customer-form";
 import { Switch } from "@/components/ui/switch";
 import FunctionalityTestForm from "./functionality-test-form";
+import { Label } from "@/components/ui/label";
 
 const repairFormSchema = z.object({
   customer: z.string().min(2, { message: "Debe seleccionar o crear un cliente." }),
