@@ -102,7 +102,7 @@ export default function CustomerForm({ initialName = '', onSave, onCancel }: Cus
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Correo Electrónico (Opcional)</FormLabel>
+              <FormLabel>Correo Electrónico</FormLabel>
               <FormControl>
                 <Input placeholder="john.doe@email.com" {...field} />
               </FormControl>
@@ -116,7 +116,7 @@ export default function CustomerForm({ initialName = '', onSave, onCancel }: Cus
             name="idNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cédula (Opcional)</FormLabel>
+                <FormLabel>Cédula</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -129,7 +129,7 @@ export default function CustomerForm({ initialName = '', onSave, onCancel }: Cus
             name="taxId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>RNC (Opcional)</FormLabel>
+                <FormLabel>RNC</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -143,7 +143,7 @@ export default function CustomerForm({ initialName = '', onSave, onCancel }: Cus
           name="company"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Compañía (Opcional)</FormLabel>
+              <FormLabel>Compañía</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
