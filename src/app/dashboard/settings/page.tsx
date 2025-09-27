@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,28 +12,25 @@ import { getStatusSettings, saveStatusSettings, StatusSettings, BadgeVariant } f
 import type { RepairStatus } from "@/services/repairs";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { getUsers, User } from "@/services/users";
 
-const users = [
-  { id: 1, name: "Peter Jones", email: "peter.jones@email.com", role: "Gerente", company: "Acme Inc.", avatar: "https://picsum.photos/seed/avatar3/40/40" },
-  { id: 2, name: "John Doe", email: "john.doe@email.com", role: "Asociado de Ventas", company: "Acme Inc.", avatar: "https://picsum.photos/seed/avatar1/40/40" },
-  { id: 3, name: "Jane Smith", email: "jane.smith@email.com", role: "Gerente", company: "Globex Corp.", avatar: "https://picsum.photos/seed/avatar2/40/40" },
-  { id: 4, name: "David Williams", email: "david.w@email.com", role: "Técnico", company: "Acme Inc.", avatar: "https://picsum.photos/seed/avatar4/40/40" },
-  { id: 5, name: "Mary Johnson", email: "mary.johnson@email.com", role: "Asociado de Ventas", company: "Acme Inc.", avatar: "https://picsum.photos/seed/avatar5/40/40" },
-];
 
 const repairStatuses: RepairStatus[] = ["Cotización", "Confirmado", "En Reparación", "Reparado", "Entregado"];
 const badgeVariants: BadgeVariant[] = ["default", "secondary", "destructive", "outline"];
 
 export default function SettingsPage() {
   const [statusSettings, setStatusSettings] = useState<StatusSettings | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    async function fetchSettings() {
+    async function fetchData() {
       const settings = await getStatusSettings();
       setStatusSettings(settings);
+      const fetchedUsers = await getUsers();
+      setUsers(fetchedUsers);
     }
-    fetchSettings();
+    fetchData();
   }, []);
 
   const handleStatusChange = (status: RepairStatus, variant: BadgeVariant) => {

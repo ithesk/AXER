@@ -3,11 +3,13 @@
 
 import { useState, useEffect } from "react";
 import { Repair, RepairStatus, updateRepair, FunctionalityTestResult, FunctionalityTestResults, EvaluationEntry, RepairQuote, RepairPart } from "@/services/repairs";
+import { User as UserData } from "@/services/users";
+import { getTechnicians } from "@/services/users";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Smartphone, Wrench, Calendar, KeyRound, HardDrive, FileText, ClipboardPenLine, ListChecks, Check, ChevronsUpDown, Loader2, Pencil, MessageSquarePlus, DollarSign, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RepairStatusProgress from "../../components/repair-status-progress";
-import { Badge, type BadgeVariant } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -46,13 +48,6 @@ const partFormSchema = z.object({
 
 type PartFormValues = z.infer<typeof partFormSchema>;
 
-const availableTechnicians = [
-    { name: "David Williams", avatar: "https://picsum.photos/seed/avatar4/40/40" },
-    { name: "Juan Perez", avatar: "https://picsum.photos/seed/avatar6/40/40" },
-    { name: "Maria Rodriguez", avatar: "https://picsum.photos/seed/avatar7/40/40" },
-    { name: "No Asignado", avatar: "" },
-];
-
 const repairStatuses: RepairStatus[] = ["Cotización", "Confirmado", "En Reparación", "Reparado", "Entregado"];
 
 const nextStatusMap: Partial<Record<RepairStatus, RepairStatus>> = {
@@ -81,6 +76,7 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     const [problemDescription, setProblemDescription] = useState(repair.problemDescription || "");
     const [newEvaluationNote, setNewEvaluationNote] = useState("");
 
+    const [availableTechnicians, setAvailableTechnicians] = useState<UserData[]>([]);
     const [technicianPopoverOpen, setTechnicianPopoverOpen] = useState(false);
     const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
     const [isEditingLabor, setIsEditingLabor] = useState(false);
@@ -98,6 +94,12 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
     });
 
     useEffect(() => {
+        async function loadTechnicians() {
+            const techs = await getTechnicians();
+            setAvailableTechnicians([...techs, { id: 'unassigned', name: 'No Asignado', role: 'Técnico', email: '', company: '', avatar: '' }]);
+        }
+        loadTechnicians();
+
         setIsClient(true);
         if (repair.entryDate) {
             setFormattedEntryDate(new Date(repair.entryDate).toLocaleString());
@@ -549,3 +551,5 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
 
     
 
+
+}

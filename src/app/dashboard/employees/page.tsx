@@ -3,39 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PageHeader } from "@/components/page-header";
 import { PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getSchedule, Schedule } from "@/services/schedule";
 
-const schedule = {
-  "Lunes": [
-    { name: "John Doe", role: "Asociado de Ventas", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
-    { name: "Peter Jones", role: "Gerente", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar3/40/40" },
-  ],
-  "Martes": [
-    { name: "Jane Smith", role: "Asociado de Ventas", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar2/40/40" },
-    { name: "David Williams", role: "Técnico", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar4/40/40" },
-  ],
-  "Miércoles": [
-    { name: "John Doe", role: "Asociado de Ventas", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
-     { name: "Mary Johnson", role: "Asociado de Ventas", time: "12pm - 8pm", avatar: "https://picsum.photos/seed/avatar5/40/40" },
-  ],
-  "Jueves": [
-     { name: "Jane Smith", role: "Asociado de Ventas", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar2/40/40" },
-    { name: "Peter Jones", role: "Gerente", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar3/40/40" },
-  ],
-  "Viernes": [
-    { name: "John Doe", role: "Asociado de Ventas", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
-    { name: "David Williams", role: "Técnico", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar4/40/40" },
-    { name: "Mary Johnson", role: "Asociado de Ventas", time: "12pm - 8pm", avatar: "https://picsum.photos/seed/avatar5/40/40" },
-  ],
-  "Sábado": [
-    { name: "Jane Smith", role: "Asociado de Ventas", time: "10am - 6pm", avatar: "https://picsum.photos/seed/avatar2/40/40" },
-    { name: "Mary Johnson", role: "Asociado de Ventas", time: "12pm - 8pm", avatar: "https://picsum.photos/seed/avatar5/40/40" },
-  ],
-  "Domingo": [],
-};
+type Day = keyof Schedule;
 
-type Day = keyof typeof schedule;
+export default async function EmployeesPage() {
+  const schedule = await getSchedule();
 
-export default function EmployeesPage() {
   return (
     <>
       <PageHeader title="Horarios de Empleados" description="Gestiona los horarios y asignaciones del personal para la semana.">

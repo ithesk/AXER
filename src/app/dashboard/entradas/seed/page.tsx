@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import type { Repair } from "@/services/repairs";
+import { seedUsers } from "@/services/users";
 
 const repairsData: Omit<Repair, 'evaluation' | 'quote'>[] = [
   { 
@@ -64,6 +65,7 @@ export default function SeedPage() {
     const handleSeed = async () => {
         try {
             await seedRepairs(repairsData);
+            await seedUsers();
             toast({
                 title: "Éxito",
                 description: "La base de datos ha sido poblada con datos de ejemplo.",
@@ -90,7 +92,7 @@ export default function SeedPage() {
                 </CardHeader>
                 <CardContent>
                     <Button onClick={handleSeed} className="w-full">
-                        Poblar Datos de Reparaciones
+                        Poblar Datos de Ejemplo
                     </Button>
                 </CardContent>
             </Card>

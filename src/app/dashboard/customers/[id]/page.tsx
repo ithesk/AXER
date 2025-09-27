@@ -4,16 +4,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import PredictNeedsForm from "./components/predict-needs-form";
+import { getCustomerById } from "@/services/customers";
+import { notFound } from "next/navigation";
 
-const customer = {
-  id: "CUST-001",
-  name: "John Doe",
-  email: "john.doe@email.com",
-  phone: "123-456-7890",
-  company: "Acme Inc.",
-  signedUp: "2023-01-15",
-  avatar: "https://picsum.photos/seed/avatar1/100/100",
-};
 
 const purchaseHistory = [
   { id: "SALE-001", date: "2024-05-01", device: "iPhone 15 Pro", total: 999.00 },
@@ -22,7 +15,13 @@ const purchaseHistory = [
   { id: "ACC-005", date: "2023-08-20", device: "AirPods Pro", total: 249.00 },
 ];
 
-export default function CustomerDetailPage({ params }: { params: { id: string } }) {
+export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
+  const customer = await getCustomerById(params.id);
+
+  if (!customer) {
+    notFound();
+  }
+
   const customerData = `
     Nombre: ${customer.name},
     Email: ${customer.email},

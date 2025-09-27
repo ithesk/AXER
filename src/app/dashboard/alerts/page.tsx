@@ -1,15 +1,11 @@
 import { PageHeader } from "@/components/page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { PackageSearch, CalendarClock, Bell } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getAlerts } from "@/services/alerts";
 
-const alerts = [
-    { id: 1, type: "Inventario", title: "Advertencia de Stock Bajo", description: "El stock de iPhone 15 Pro es de 5 unidades en la tienda del centro.", icon: PackageSearch, variant: "destructive" as const, date: "Hace 2 horas" },
-    { id: 2, type: "Horario", title: "Conflicto de Horario", description: "John Doe y Jane Smith tienen turnos superpuestos el viernes.", icon: CalendarClock, variant: "default" as const, date: "Hace 1 día" },
-    { id: 3, type: "Inventario", title: "Agotado", description: "Samsung Galaxy Z Fold 5 está agotado en el Mall of America.", icon: PackageSearch, variant: "destructive" as const, date: "Hace 3 días" },
-];
+export default async function AlertsPage() {
+    const alerts = await getAlerts();
 
-export default function AlertsPage() {
     return (
         <>
             <PageHeader title="Alertas y Notificaciones" description="Eventos y actualizaciones importantes que requieren tu atención." />
