@@ -36,7 +36,7 @@ const navItems = [
 export function DashboardNav() {
     const pathname = usePathname();
     const { state } = useSidebar();
-    const isEntradasPath = pathname.startsWith('/dashboard/entradas') || pathname.startsWith('/dashboard/equipos');
+    const isEntradasPath = pathname.startsWith('/dashboard/entradas') || pathname.startsWith('/dashboard/equipos') || pathname.startsWith('/dashboard/problemas-comunes');
 
     return (
         <SidebarMenu>
@@ -108,6 +108,11 @@ export function DashboardNav() {
                         <SidebarMenuSubItem>
                             <SidebarMenuSubButton asChild isActive={pathname === "/dashboard/equipos"}>
                                 <Link href="/dashboard/equipos">Gestionar Equipos</Link>
+                            </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                         <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild isActive={pathname === "/dashboard/problemas-comunes"}>
+                                <Link href="/dashboard/problemas-comunes">Problemas Comunes</Link>
                             </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                     </SidebarMenuSub>

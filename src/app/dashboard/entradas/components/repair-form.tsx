@@ -44,6 +44,8 @@ import CustomerForm from "../../customers/components/customer-form";
 import { Switch } from "@/components/ui/switch";
 import FunctionalityTestForm from "./functionality-test-form";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { getCommonProblems } from "@/services/common-problems";
 
 const repairFormSchema = z.object({
   customer: z.string().min(2, { message: "Debe seleccionar o crear un cliente." }),
@@ -71,6 +73,7 @@ export default function RepairForm() {
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
   const [deviceOptions, setDeviceOptions] = useState<DeviceOption[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [commonProblems, setCommonProblems] = useState<string[]>([]);
   const [devicePopoverOpen, setDevicePopoverOpen] = useState(false);
   const [customerPopoverOpen, setCustomerPopoverOpen] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
@@ -87,6 +90,8 @@ export default function RepairForm() {
       setDeviceData(devices);
       const fetchedCustomers = await getCustomers();
       setCustomers(fetchedCustomers);
+      const problems = await getCommonProblems();
+      setCommonProblems(problems);
     }
     loadInitialData();
   }, []);
@@ -144,6 +149,12 @@ export default function RepairForm() {
     if (isOn) {
         setFunctionalityTestOpen(true);
     }
+  }
+
+  const addProblemToDescription = (problem: string) => {
+    const currentDescription = form.getValues("problemDescription");
+    const newDescription = currentDescription ? `${currentDescription}, ${problem}` : problem;
+    form.setValue("problemDescription", newDescription, { shouldValidate: true });
   }
 
   async function onSubmit(data: RepairFormValues) {
@@ -354,15 +365,27 @@ export default function RepairForm() {
 
               { selectedDevice && (
                 <>
-                  <FormField
+                   <FormField
                     control={form.control}
                     name="problemDescription"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Descripción del Problema</FormLabel>
+                        <FormLabel>Problemas Comunes</FormLabel>
+                         <div className="flex flex-wrap gap-2 mb-2">
+                           {commonProblems.map(problem => (
+                            <Badge 
+                              key={problem}
+                              variant="outline"
+                              className="cursor-pointer"
+                              onClick={() => addProblemToDescription(problem)}
+                            >
+                              {problem}
+                            </Badge>
+                           ))}
+                         </div>
                         <FormControl>
                           <Textarea
-                            placeholder="Ej: La pantalla está rota y la batería no carga..."
+                            placeholder="Describa el problema o seleccione uno de los problemas comunes..."
                             className="resize-none"
                             {...field}
                           />
@@ -478,5 +501,3 @@ export default function RepairForm() {
     </>
   );
 }
-
-    
