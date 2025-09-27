@@ -58,12 +58,24 @@ type DeviceOption = {
   value: string;
 };
 
+// Mock customer data, in a real app this would come from a service/API
+const customers = [
+  { value: "John Doe", label: "John Doe" },
+  { value: "Jane Smith", label: "Jane Smith" },
+  { value: "Peter Jones", label: "Peter Jones" },
+  { value: "Mary Johnson", label: "Mary Johnson" },
+  { value: "David Williams", label: "David Williams" },
+];
+
+
 export default function RepairForm() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
   const [deviceOptions, setDeviceOptions] = useState<DeviceOption[]>([]);
-  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [devicePopoverOpen, setDevicePopoverOpen] = useState(false);
+  const [customerPopoverOpen, setCustomerPopoverOpen] = useState(false);
+
 
   const router = useRouter();
   const { toast } = useToast();
@@ -101,7 +113,7 @@ export default function RepairForm() {
       setDeviceOptions(options);
       form.setValue("device", ""); // Reset device selection
     }
-  }, [selectedDeviceType, deviceData, form.setValue]);
+  }, [selectedDeviceType, deviceData, form]);
 
   async function onSubmit(data: RepairFormValues) {
     setLoading(true);
@@ -171,11 +183,73 @@ export default function RepairForm() {
                 control={form.control}
                 name="customer"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Nombre del Cliente</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ej: John Doe" {...field} />
-                    </FormControl>
+                    <Popover open={customerPopoverOpen} onOpenChange={setCustomerPopoverOpen}>
+                        <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                        "w-full justify-between",
+                                        !field.value && "text-muted-foreground"
+                                    )}
+                                >
+                                    {field.value || "Seleccione o cree un cliente"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput 
+                                    placeholder="Buscar cliente..." 
+                                    onValueChange={(currentValue) => {
+                                        if (!customers.some(c => c.value.toLowerCase() === currentValue.toLowerCase())) {
+                                            form.setValue("customer", currentValue)
+                                        }
+                                    }}
+                                />
+                                <CommandList>
+                                    <CommandEmpty>
+                                        <Button 
+                                            variant="ghost" 
+                                            className="w-full text-left justify-start"
+                                            onClick={() => {
+                                                // Value is already set by onValueChange
+                                                setCustomerPopoverOpen(false);
+                                            }}
+                                        >
+                                            Crear nuevo cliente: "{form.getValues("customer")}"
+                                        </Button>
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                        {customers.map((customer) => (
+                                            <CommandItem
+                                                value={customer.label}
+                                                key={customer.value}
+                                                onSelect={() => {
+                                                    form.setValue("customer", customer.value);
+                                                    setCustomerPopoverOpen(false);
+                                                }}
+                                            >
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        customer.value === field.value
+                                                            ? "opacity-100"
+                                                            : "opacity-0"
+                                                    )}
+                                                />
+                                                {customer.label}
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -192,7 +266,7 @@ export default function RepairForm() {
                 render={({ field }) => (
                 <FormItem className="flex flex-col">
                     <FormLabel>Equipo</FormLabel>
-                    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                    <Popover open={devicePopoverOpen} onOpenChange={setDevicePopoverOpen}>
                     <PopoverTrigger asChild>
                         <FormControl>
                         <Button
@@ -224,7 +298,7 @@ export default function RepairForm() {
                                 key={option.value}
                                 onSelect={() => {
                                     form.setValue("device", option.value);
-                                    setPopoverOpen(false);
+                                    setDevicePopoverOpen(false);
                                 }}
                                 >
                                 <Check
