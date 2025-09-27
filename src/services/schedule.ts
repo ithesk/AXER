@@ -1,5 +1,6 @@
-// In a real app, this data would be in a database
-// For now, we'll mock it
+import { db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+
 export type Shift = {
     name: string;
     role: string;
@@ -17,7 +18,7 @@ export type Schedule = {
     "Domingo": Shift[];
 };
 
-const schedule: Schedule = {
+const scheduleData: Schedule = {
   "Lunes": [
     { name: "John Doe", role: "Asociado de Ventas", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar1/40/40" },
     { name: "Peter Jones", role: "Gerente", time: "9am - 5pm", avatar: "https://picsum.photos/seed/avatar3/40/40" },
@@ -46,8 +47,18 @@ const schedule: Schedule = {
   "Domingo": [],
 };
 
+const scheduleDocRef = doc(db, 'schedules', 'mainSchedule');
+
 export async function getSchedule(): Promise<Schedule> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return schedule;
+    const docSnap = await getDoc(scheduleDocRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as Schedule;
+    }
+    // If not found, seed the data and return it
+    await seedSchedule();
+    return scheduleData;
+}
+
+export async function seedSchedule() {
+    await setDoc(scheduleDocRef, scheduleData);
 }

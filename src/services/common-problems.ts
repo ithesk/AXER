@@ -1,7 +1,7 @@
-// This is a service to simulate fetching common problems data.
-// In a real application, this would come from a database.
+import { db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
-const commonProblems = [
+const commonProblemsData = [
     "Pantalla rota",
     "No carga",
     "Batería se descarga rápido",
@@ -15,7 +15,18 @@ const commonProblems = [
     "Problemas de software",
 ];
 
+const problemsDocRef = doc(db, 'settings', 'commonProblems');
+
 export async function getCommonProblems(): Promise<string[]> {
-    // Simulate API delay
-    return new Promise(resolve => setTimeout(() => resolve(commonProblems), 300));
+    const docSnap = await getDoc(problemsDocRef);
+    if (docSnap.exists() && docSnap.data().problems) {
+        return docSnap.data().problems;
+    }
+    // If not found, seed the data and return it
+    await seedCommonProblems();
+    return commonProblemsData;
+}
+
+export async function seedCommonProblems() {
+    await setDoc(problemsDocRef, { problems: commonProblemsData });
 }

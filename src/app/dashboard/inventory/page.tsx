@@ -41,9 +41,9 @@ export default async function InventoryPage() {
             </TableHeader>
             <TableBody>
               {inventory.map((item) => (
-                <TableRow key={item.sku}>
+                <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.model}</TableCell>
-                  <TableCell>{item.sku}</TableCell>
+                  <TableCell>{item.id}</TableCell>
                   <TableCell>
                     <Badge variant={item.status === 'Agotado' ? 'destructive' : item.status === 'Stock Bajo' ? 'secondary' : 'default'}>
                       {item.status}

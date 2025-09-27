@@ -1,5 +1,5 @@
-// This is a service to simulate fetching device data.
-// In a real application, this would come from a database.
+import { db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export type DeviceData = {
     [key in 'Celular' | 'Tablet' | 'Reloj' | 'Laptop']: {
@@ -43,7 +43,18 @@ const deviceData: DeviceData = {
     }
 };
 
+const devicesDocRef = doc(db, 'settings', 'deviceData');
+
 export async function getDeviceData(): Promise<DeviceData> {
-    // Simulate API delay
-    return new Promise(resolve => setTimeout(() => resolve(deviceData), 500));
+    const docSnap = await getDoc(devicesDocRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as DeviceData;
+    }
+    // If not found, seed the data and return it
+    await seedDeviceData();
+    return deviceData;
+}
+
+export async function seedDeviceData() {
+    await setDoc(devicesDocRef, deviceData);
 }
