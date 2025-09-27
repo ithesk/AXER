@@ -115,6 +115,11 @@ export function DashboardNav() {
                                 <Link href="/dashboard/problemas-comunes">Problemas Comunes</Link>
                             </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
+                        <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild isActive={pathname === "/dashboard/entradas/settings"}>
+                                <Link href="/dashboard/entradas/settings">Configuración</Link>
+                            </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
                     </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
