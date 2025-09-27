@@ -363,24 +363,18 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                                                      className="flex items-center space-x-4"
                                                      disabled={isLoading}
                                                  >
-                                                     <FormItem className="flex items-center space-x-2">
-                                                         <FormControl>
-                                                             <RadioGroupItem value="ok" id={`${item.name}-ok`} />
-                                                         </FormControl>
+                                                     <div className="flex items-center space-x-2">
+                                                         <RadioGroupItem value="ok" id={`${item.name}-ok`} />
                                                          <Label htmlFor={`${item.name}-ok`} className="font-normal text-green-600">OK</Label>
-                                                     </FormItem>
-                                                     <FormItem className="flex items-center space-x-2">
-                                                         <FormControl>
-                                                             <RadioGroupItem value="fail" id={`${item.name}-fail`}/>
-                                                         </FormControl>
+                                                     </div>
+                                                     <div className="flex items-center space-x-2">
+                                                         <RadioGroupItem value="fail" id={`${item.name}-fail`}/>
                                                          <Label htmlFor={`${item.name}-fail`} className="font-normal text-red-600">Falla</Label>
-                                                     </FormItem>
-                                                     <FormItem className="flex items-center space-x-2">
-                                                         <FormControl>
-                                                             <RadioGroupItem value="na" id={`${item.name}-na`}/>
-                                                         </FormControl>
+                                                     </div>
+                                                     <div className="flex items-center space-x-2">
+                                                         <RadioGroupItem value="na" id={`${item.name}-na`}/>
                                                          <Label htmlFor={`${item.name}-na`} className="font-normal text-muted-foreground">N/A</Label>
-                                                     </FormItem>
+                                                     </div>
                                                  </RadioGroup>
                                              </div>
                                         ))}
