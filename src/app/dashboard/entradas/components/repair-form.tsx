@@ -174,10 +174,7 @@ export default function RepairForm() {
   };
 
   return (
-    <Dialog open={customerDialogOpen || functionalityTestOpen} onOpenChange={(open) => {
-      if (customerDialogOpen && !open) setCustomerDialogOpen(false);
-      if (functionalityTestOpen && !open) setFunctionalityTestOpen(false);
-    }}>
+    <Dialog>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
@@ -239,13 +236,15 @@ export default function RepairForm() {
                                   />
                                   <CommandList>
                                       <CommandEmpty>
-                                        <Button 
-                                          variant="ghost" 
-                                          className="w-full text-left justify-start"
-                                          onClick={() => setCustomerDialogOpen(true)}
-                                        >
-                                          Crear nuevo cliente: "{newCustomerName}"
-                                        </Button>
+                                        <DialogTrigger asChild>
+                                          <Button 
+                                            variant="ghost" 
+                                            className="w-full text-left justify-start"
+                                            onClick={() => setCustomerDialogOpen(true)}
+                                          >
+                                            Crear nuevo cliente: "{newCustomerName}"
+                                          </Button>
+                                        </DialogTrigger>
                                       </CommandEmpty>
                                       <CommandGroup>
                                           {customers.map((customer) => (
@@ -403,10 +402,26 @@ export default function RepairForm() {
                       <p className="text-sm text-muted-foreground">
                         Si el equipo enciende, realice una prueba de funcionalidades para un mejor diagnóstico.
                       </p>
-                      <Button type="button" onClick={() => setFunctionalityTestOpen(true)} disabled={!deviceIsOn} className="w-full">
-                        <Wrench className="mr-2 h-4 w-4" />
-                        Realizar Prueba de Funciones
-                      </Button>
+                       <Dialog open={functionalityTestOpen} onOpenChange={setFunctionalityTestOpen}>
+                        <DialogTrigger asChild>
+                            <Button type="button" disabled={!deviceIsOn} className="w-full">
+                                <Wrench className="mr-2 h-4 w-4" />
+                                Realizar Prueba de Funciones
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Prueba de Funciones del Equipo</DialogTitle>
+                                <DialogDescription>
+                                Marque las casillas correspondientes al estado de cada función.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <FunctionalityTestForm 
+                                onSave={handleFunctionalityTestSave}
+                                onCancel={() => setFunctionalityTestOpen(false)}
+                            />
+                        </DialogContent>
+                       </Dialog>
                       {form.watch("functionalityTest") && (
                         <div className="text-sm text-green-600 flex items-center gap-2">
                           <Check className="h-4 w-4" />
@@ -441,8 +456,7 @@ export default function RepairForm() {
         </form>
       </Form>
       
-      {customerDialogOpen && (
-        <DialogContent onOpenChange={setCustomerDialogOpen}>
+      <DialogContent onOpenChange={setCustomerDialogOpen}>
           <DialogHeader>
             <DialogTitle>Crear Nuevo Cliente</DialogTitle>
             <DialogDescription>
@@ -454,23 +468,7 @@ export default function RepairForm() {
             onSave={handleCustomerCreated} 
             onCancel={() => setCustomerDialogOpen(false)} 
           />
-        </DialogContent>
-      )}
-
-      {functionalityTestOpen && (
-        <DialogContent onOpenChange={setFunctionalityTestOpen}>
-          <DialogHeader>
-            <DialogTitle>Prueba de Funciones del Equipo</DialogTitle>
-            <DialogDescription>
-              Marque las casillas correspondientes al estado de cada función.
-            </DialogDescription>
-          </DialogHeader>
-          <FunctionalityTestForm 
-            onSave={handleFunctionalityTestSave}
-            onCancel={() => setFunctionalityTestOpen(false)}
-          />
-        </DialogContent>
-      )}
+      </DialogContent>
     </Dialog>
   );
 }

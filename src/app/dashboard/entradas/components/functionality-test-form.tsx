@@ -31,7 +31,7 @@ interface FunctionalityTestFormProps {
     onCancel: () => void;
 }
 
-const testItems: { name: keyof FunctionalityTestResults; label: string }[] = [
+const testItems: { name: keyof Omit<FunctionalityTestResults, 'other'>; label: string }[] = [
     { name: "cameraFront", label: "Cámara Frontal" },
     { name: "cameraBack", label: "Cámara Trasera" },
     { name: "chargingPort", label: "Puerto de Carga" },
