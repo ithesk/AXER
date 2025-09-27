@@ -31,14 +31,14 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { addRepair, FunctionalityTestResults } from "@/services/repairs";
 import { useState, useEffect } from "react";
-import { Loader2, ArrowLeft, ChevronsUpDown, Check, Wrench } from "lucide-react";
+import { Loader2, ChevronsUpDown, Check } from "lucide-react";
 import { getDeviceData, DeviceData } from "@/services/devices";
-import { getCustomers, addCustomer, Customer } from "@/services/customers";
+import { getCustomers, addCustomer, Customer, NewCustomer } from "@/services/customers";
 import { cn } from "@/lib/utils";
 import CustomerForm from "../../customers/components/customer-form";
 import { Switch } from "@/components/ui/switch";
@@ -69,7 +69,6 @@ type DeviceOption = {
 
 export default function RepairForm() {
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
   const [deviceOptions, setDeviceOptions] = useState<DeviceOption[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -110,6 +109,7 @@ export default function RepairForm() {
 
   const selectedDeviceType = form.watch("deviceType");
   const selectedDevice = form.watch("device");
+  const functionalityTestResults = form.watch("functionalityTest");
 
   useEffect(() => {
     if (selectedDeviceType && deviceData) {
@@ -160,7 +160,7 @@ export default function RepairForm() {
   async function onSubmit(data: RepairFormValues) {
     setLoading(true);
     try {
-      await addRepair(data);
+      await addRepair(data as NewRepair);
       toast({
         title: "Entrada Registrada",
         description: "La nueva orden de reparación ha sido creada exitosamente.",
@@ -179,129 +179,38 @@ export default function RepairForm() {
     }
   }
 
-  const nextStep = async () => {
-    const fieldsToValidate: (keyof RepairFormValues)[] = step === 1 ? ['deviceType', 'customer'] : ['device', 'problemDescription'];
-    const isValid = await form.trigger(fieldsToValidate);
-    if (isValid) {
-      setStep(step + 1);
-    }
-  };
-
-  const prevStep = () => {
-    setStep(step - 1);
-  };
-
   return (
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
-          {step === 1 && (
-            <div className="space-y-8">
-              <div className="grid md:grid-cols-2 gap-8">
-                <FormField
-                  control={form.control}
-                  name="deviceType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipo de Equipo</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccione un tipo" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Celular">Celular</SelectItem>
-                          <SelectItem value="Tablet">Tablet</SelectItem>
-                          <SelectItem value="Reloj">Reloj</SelectItem>
-                          <SelectItem value="Laptop">Laptop</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customer"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Nombre del Cliente</FormLabel>
-                      <Popover open={customerPopoverOpen} onOpenChange={setCustomerPopoverOpen}>
-                          <PopoverTrigger asChild>
-                              <FormControl>
-                                  <Button
-                                      variant="outline"
-                                      role="combobox"
-                                      className={cn(
-                                          "w-full justify-between",
-                                          !field.value && "text-muted-foreground"
-                                      )}
-                                  >
-                                      {field.value || "Seleccione o cree un cliente"}
-                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                              </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                              <Command>
-                                  <CommandInput 
-                                      placeholder="Buscar cliente por nombre o teléfono..." 
-                                      onValueChange={(currentValue) => {
-                                        setNewCustomerName(currentValue);
-                                      }}
-                                  />
-                                  <CommandList>
-                                      <CommandEmpty>
-                                        <Button 
-                                          variant="ghost" 
-                                          className="w-full text-left justify-start"
-                                          onClick={() => setCustomerDialogOpen(true)}
-                                        >
-                                          Crear nuevo cliente: "{newCustomerName}"
-                                        </Button>
-                                      </CommandEmpty>
-                                      <CommandGroup>
-                                          {customers.map((customer) => (
-                                              <CommandItem
-                                                  value={`${customer.name} - ${customer.phone}`}
-                                                  key={customer.id}
-                                                  onSelect={() => {
-                                                      form.setValue("customer", customer.name);
-                                                      setCustomerPopoverOpen(false);
-                                                  }}
-                                              >
-                                                  <Check
-                                                      className={cn(
-                                                          "mr-2 h-4 w-4",
-                                                          customer.name === field.value
-                                                              ? "opacity-100"
-                                                              : "opacity-0"
-                                                      )}
-                                                  />
-                                                  <div>
-                                                    <p>{customer.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{customer.phone}</p>
-                                                  </div>
-                                              </CommandItem>
-                                          ))}
-                                      </CommandGroup>
-                                  </CommandList>
-                              </Command>
-                          </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-          )}
+          <FormField
+            control={form.control}
+            name="deviceType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Equipo</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione un tipo" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Celular">Celular</SelectItem>
+                    <SelectItem value="Tablet">Tablet</SelectItem>
+                    <SelectItem value="Reloj">Reloj</SelectItem>
+                    <SelectItem value="Laptop">Laptop</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-          {step === 2 && (
-            <div className="space-y-8">
-              <FormField
+          {selectedDeviceType && (
+            <div className="grid md:grid-cols-2 gap-8">
+               <FormField
                   control={form.control}
                   name="device"
                   render={({ field }) => (
@@ -362,108 +271,165 @@ export default function RepairForm() {
                   </FormItem>
                   )}
               />
+              <FormField
+                control={form.control}
+                name="customer"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Nombre del Cliente</FormLabel>
+                    <Popover open={customerPopoverOpen} onOpenChange={setCustomerPopoverOpen}>
+                        <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                        "w-full justify-between",
+                                        !field.value && "text-muted-foreground"
+                                    )}
+                                >
+                                    {field.value || "Seleccione o cree un cliente"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput 
+                                    placeholder="Buscar cliente por nombre o teléfono..." 
+                                    onValueChange={(currentValue) => {
+                                      setNewCustomerName(currentValue);
+                                    }}
+                                />
+                                <CommandList>
+                                    <CommandEmpty>
+                                      <Button 
+                                        variant="ghost" 
+                                        className="w-full text-left justify-start"
+                                        onClick={() => setCustomerDialogOpen(true)}
+                                      >
+                                        Crear nuevo cliente: "{newCustomerName}"
+                                      </Button>
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                        {customers.map((customer) => (
+                                            <CommandItem
+                                                value={`${customer.name} - ${customer.phone}`}
+                                                key={customer.id}
+                                                onSelect={() => {
+                                                    form.setValue("customer", customer.name);
+                                                    setCustomerPopoverOpen(false);
+                                                }}
+                                            >
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        customer.name === field.value
+                                                            ? "opacity-100"
+                                                            : "opacity-0"
+                                                    )}
+                                                />
+                                                <div>
+                                                  <p>{customer.name}</p>
+                                                  <p className="text-xs text-muted-foreground">{customer.phone}</p>
+                                                </div>
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+          
+          { selectedDevice && (
+            <>
+               <FormField
+                control={form.control}
+                name="problemDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Problemas Comunes</FormLabel>
+                     <div className="flex flex-wrap gap-2 mb-2">
+                       {commonProblems.map(problem => (
+                        <Badge 
+                          key={problem}
+                          variant="outline"
+                          className="cursor-pointer"
+                          onClick={() => addProblemToDescription(problem)}
+                        >
+                          {problem}
+                        </Badge>
+                       ))}
+                     </div>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describa el problema o seleccione uno de los problemas comunes..."
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="rounded-lg border p-4 space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch id="device-on-switch" checked={deviceIsOn} onCheckedChange={handleDeviceIsOn} />
+                    <Label htmlFor="device-on-switch">¿El equipo enciende?</Label>
+                  </div>
+                  {functionalityTestResults && (
+                    <div className="text-sm text-green-600 flex items-center gap-2">
+                      <Check className="h-4 w-4" />
+                      <span>Prueba de funciones completada.</span>
+                    </div>
+                  )}
+              </div>
+            </>
+          )}
 
-              { selectedDevice && (
-                <>
-                   <FormField
+          { (deviceIsOn ? functionalityTestResults : true) && selectedDevice && (
+            <div className="grid md:grid-cols-2 gap-8 items-start">
+                <FormField
                     control={form.control}
-                    name="problemDescription"
+                    name="imeiOrSn"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Problemas Comunes</FormLabel>
-                         <div className="flex flex-wrap gap-2 mb-2">
-                           {commonProblems.map(problem => (
-                            <Badge 
-                              key={problem}
-                              variant="outline"
-                              className="cursor-pointer"
-                              onClick={() => addProblemToDescription(problem)}
-                            >
-                              {problem}
-                            </Badge>
-                           ))}
-                         </div>
+                    <FormItem>
+                        <FormLabel>IMEI o Número de Serie</FormLabel>
                         <FormControl>
-                          <Textarea
-                            placeholder="Describa el problema o seleccione uno de los problemas comunes..."
-                            className="resize-none"
-                            {...field}
-                          />
+                        <Input placeholder="(Opcional)" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
+                    </FormItem>
                     )}
-                  />
-                  <div className="grid md:grid-cols-2 gap-8 items-start">
-                      <div className="space-y-8">
-                        <FormField
-                            control={form.control}
-                            name="imeiOrSn"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>IMEI o Número de Serie</FormLabel>
-                                <FormControl>
-                                <Input placeholder="(Opcional)" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Contraseña del Equipo</FormLabel>
-                                <FormControl>
-                                <Input placeholder="(Opcional)" {...field} />
-                                </FormControl>
-                                <FormDescription>Dejar en blanco si no tiene.</FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                      </div>
-                      <div className="space-y-4 rounded-lg border p-4">
-                          <div className="flex items-center space-x-2">
-                            <Switch id="device-on-switch" checked={deviceIsOn} onCheckedChange={handleDeviceIsOn} />
-                            <Label htmlFor="device-on-switch">¿El equipo enciende?</Label>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            Si el equipo enciende, realice una prueba de funcionalidades para un mejor diagnóstico.
-                          </p>
-                          {form.watch("functionalityTest") && (
-                            <div className="text-sm text-green-600 flex items-center gap-2">
-                              <Check className="h-4 w-4" />
-                              <span>Prueba de funciones completada.</span>
-                            </div>
-                          )}
-                      </div>
-                  </div>
-                </>
-              )}
+                />
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Contraseña del Equipo</FormLabel>
+                        <FormControl>
+                        <Input placeholder="(Opcional)" {...field} />
+                        </FormControl>
+                        <FormDescription>Dejar en blanco si no tiene.</FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
             </div>
           )}
 
-          <div className="flex justify-between">
-            {step > 1 && (
-              <Button type="button" variant="outline" onClick={prevStep}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Anterior
-              </Button>
-            )}
-            <div className={cn(step === 1 && "w-full flex justify-end")}>
-              {step < 2 ? (
-                <Button type="button" onClick={nextStep} disabled={!selectedDeviceType || !form.getValues("customer")}>
-                  Siguiente
-                </Button>
-              ) : (
-                <Button type="submit" disabled={loading || !selectedDevice}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {loading ? "Guardando..." : "Registrar Entrada"}
-                </Button>
-              )}
-            </div>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={loading || !selectedDevice || !form.getValues("customer")}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading ? "Guardando..." : "Registrar Entrada"}
+            </Button>
           </div>
         </form>
       </Form>
