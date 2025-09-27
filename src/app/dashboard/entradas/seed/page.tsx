@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import type { Repair } from "@/services/repairs";
 
-const repairsData: Omit<Repair, 'evaluation'>[] = [
+const repairsData: Omit<Repair, 'evaluation' | 'quote'>[] = [
   { 
     id: "REP-001", 
     customer: "John Doe", 
@@ -97,5 +97,3 @@ export default function SeedPage() {
         </div>
     );
 }
-
-    

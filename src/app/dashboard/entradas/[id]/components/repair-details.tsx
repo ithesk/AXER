@@ -2,16 +2,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Repair, RepairStatus, updateRepair, FunctionalityTestResult, FunctionalityTestResults, EvaluationEntry } from "@/services/repairs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Smartphone, Wrench, Calendar, KeyRound, HardDrive, FileText, ClipboardPenLine, ListChecks, Check, ChevronsUpDown, Loader2, Pencil, MessageSquarePlus } from "lucide-react";
+import { Repair, RepairStatus, updateRepair, FunctionalityTestResult, FunctionalityTestResults, EvaluationEntry, RepairQuote, RepairPart } from "@/services/repairs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { User, Smartphone, Wrench, Calendar, KeyRound, HardDrive, FileText, ClipboardPenLine, ListChecks, Check, ChevronsUpDown, Loader2, Pencil, MessageSquarePlus, DollarSign, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RepairStatusProgress from "../../components/repair-status-progress";
 import { Badge, BadgeVariant } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { getDeviceData, DeviceData } from "@/services/devices";
@@ -19,6 +19,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import FunctionalityTestForm from "../../components/functionality-test-form";
 import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 const functionalityTestItems: { name: keyof Omit<import("@/services/repairs").FunctionalityTestResults, 'other'>; label: string }[] = [
     { name: "cameraFront", label: "Cámara Frontal" },
@@ -33,6 +38,14 @@ const functionalityTestItems: { name: keyof Omit<import("@/services/repairs").Fu
     { name: "wifi", label: "Wi-Fi / Red" },
     { name: "biometrics", label: "Face ID / Lector de Huella" },
 ];
+
+const partFormSchema = z.object({
+  name: z.string().min(3, "El nombre de la pieza es requerido."),
+  price: z.coerce.number().min(0, "El precio no puede ser negativo."),
+});
+
+type PartFormValues = z.infer<typeof partFormSchema>;
+
 
 const availableTechnicians = ["David Williams", "Juan Perez", "Maria Rodriguez", "No Asignado"];
 const repairStatuses: RepairStatus[] = ["Cotización", "Confirmado", "En Reparación", "Reparado", "Entregado"];
@@ -65,12 +78,20 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
 
     const [technicianPopoverOpen, setTechnicianPopoverOpen] = useState(false);
     const [functionalityTestOpen, setFunctionalityTestOpen] = useState(false);
+    const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+    const [isEditingLabor, setIsEditingLabor] = useState(false);
+    const [laborCost, setLaborCost] = useState(repair.quote?.labor || 0);
 
     const [formattedEntryDate, setFormattedEntryDate] = useState("");
     const [isClient, setIsClient] = useState(false);
     const { toast } = useToast();
 
     const isTechnicianAssigned = repair.technician !== "No Asignado";
+
+    const partForm = useForm<PartFormValues>({
+        resolver: zodResolver(partFormSchema),
+        defaultValues: { name: "", price: 0 },
+    });
 
     useEffect(() => {
         setIsClient(true);
@@ -117,25 +138,50 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                 date: new Date().toISOString(),
             };
             const updatedEntries = [...(repair.evaluation || []), newEntry];
-            const updatedRepair = await updateRepair(repair.id, { evaluation: updatedEntries });
-            setRepair(updatedRepair);
+            await handleSave('evaluation', updatedEntries, "La bitácora de evaluación ha sido actualizada.");
             setNewEvaluationNote("");
-            toast({
-                title: "Nota Añadida",
-                description: "La bitácora de evaluación ha sido actualizada.",
-            });
         } catch (error) {
             console.error("Failed to add evaluation note:", error);
-            toast({
-                title: "Error",
-                description: "No se pudo añadir la nota de evaluación.",
-                variant: "destructive",
-            });
         } finally {
             setIsLoading(false);
         }
     };
-    
+
+    const handleQuoteUpdate = async (updatedQuote: RepairQuote) => {
+        await handleSave('quote', updatedQuote);
+    }
+
+    const onPartSubmit = async (values: PartFormValues) => {
+        const newPart: RepairPart = {
+            id: `part-${Date.now()}`,
+            ...values
+        };
+        const currentQuote = repair.quote || { parts: [], labor: 0, total: 0 };
+        const updatedParts = [...currentQuote.parts, newPart];
+        const newTotal = updatedParts.reduce((sum, part) => sum + part.price, 0) + currentQuote.labor;
+        
+        await handleQuoteUpdate({
+            ...currentQuote,
+            parts: updatedParts,
+            total: newTotal,
+        });
+
+        partForm.reset();
+        setQuoteDialogOpen(false);
+    };
+
+     const handleLaborSave = async () => {
+        const currentQuote = repair.quote || { parts: [], labor: 0, total: 0 };
+        const newTotal = currentQuote.parts.reduce((sum, part) => sum + part.price, 0) + laborCost;
+
+        await handleQuoteUpdate({
+            ...currentQuote,
+            labor: laborCost,
+            total: newTotal,
+        });
+        setIsEditingLabor(false);
+    };
+
     const getStatusVariant = (status: FunctionalityTestResult): BadgeVariant => {
         switch (status) {
             case "ok": return "default";
@@ -184,6 +230,64 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
 
                 <div className="grid lg:grid-cols-3 gap-6 items-start">
                     <div className="lg:col-span-2 grid gap-6">
+                        <Card>
+                             <CardHeader>
+                                <div className="flex justify-between items-center">
+                                    <CardTitle className="font-headline flex items-center gap-2"><DollarSign className="h-5 w-5" /> Cotización</CardTitle>
+                                    <Button variant="outline" size="sm" onClick={() => setQuoteDialogOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Añadir Pieza</Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                {repair.quote && repair.quote.parts.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Pieza</TableHead>
+                                                <TableHead className="text-right">Precio</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {repair.quote.parts.map(part => (
+                                                <TableRow key={part.id}>
+                                                    <TableCell>{part.name}</TableCell>
+                                                    <TableCell className="text-right">${part.price.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-4">No se han añadido piezas a la cotización.</p>
+                                )}
+                            </CardContent>
+                            {repair.quote && (
+                                <CardFooter className="flex-col items-start gap-2 border-t pt-4">
+                                     <div className="flex justify-between w-full">
+                                        <span className="text-muted-foreground">Mano de Obra</span>
+                                        {isEditingLabor ? (
+                                             <div className="flex items-center gap-2">
+                                                <Input 
+                                                    type="number" 
+                                                    value={laborCost} 
+                                                    onChange={(e) => setLaborCost(Number(e.target.value))}
+                                                    className="h-8 w-24 text-right"
+                                                />
+                                                <Button size="sm" onClick={handleLaborSave} disabled={isLoading}>Guardar</Button>
+                                                <Button size="sm" variant="ghost" onClick={() => { setIsEditingLabor(false); setLaborCost(repair.quote?.labor || 0);}}>Cancelar</Button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <span>${repair.quote.labor.toFixed(2)}</span>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsEditingLabor(true)}><Pencil className="h-3 w-3" /></Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-between w-full font-bold">
+                                        <span>Total</span>
+                                        <span>${repair.quote.total.toFixed(2)}</span>
+                                    </div>
+                                </CardFooter>
+                            )}
+                        </Card>
                         <Card>
                             <CardHeader>
                                 <div className="flex justify-between items-center">
@@ -321,7 +425,10 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                                                         {availableTechnicians.map((tech) => (
                                                             <CommandItem
                                                                 key={tech}
-                                                                onSelect={() => handleSave('technician', tech)}
+                                                                onSelect={() => {
+                                                                    handleSave('technician', tech, 'Técnico asignado.');
+                                                                    setTechnicianPopoverOpen(false);
+                                                                }}
                                                             >
                                                                 <Check className={cn("mr-2 h-4 w-4", repair.technician === tech ? "opacity-100" : "opacity-0")} />
                                                                 {tech}
@@ -343,11 +450,11 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                                 <hr className="my-2" />
                                 <div className="space-y-2">
                                     <Label>Producto a Reparar</Label>
-                                    <Input defaultValue={repair.device} onBlur={(e) => handleSave('device', e.target.value)} disabled={isLoading} />
+                                    <Input defaultValue={repair.device} onBlur={(e) => handleSave('device', e.target.value, 'Producto actualizado.')} disabled={isLoading} />
                                 </div>
                                  <div className="space-y-2">
                                     <Label>Tipo de Equipo</Label>
-                                    <Select defaultValue={repair.deviceType} onValueChange={(value) => handleSave('deviceType', value)} disabled={isLoading}>
+                                    <Select defaultValue={repair.deviceType} onValueChange={(value) => handleSave('deviceType', value, 'Tipo de equipo actualizado.')} disabled={isLoading}>
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
@@ -361,11 +468,11 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>IMEI o Número de Serie</Label>
-                                    <Input defaultValue={repair.imeiOrSn} onBlur={(e) => handleSave('imeiOrSn', e.target.value)} disabled={isLoading} />
+                                    <Input defaultValue={repair.imeiOrSn} onBlur={(e) => handleSave('imeiOrSn', e.target.value, 'IMEI/SN actualizado.')} disabled={isLoading} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Contraseña del Equipo</Label>
-                                    <Input defaultValue={repair.password} onBlur={(e) => handleSave('password', e.target.value)} disabled={isLoading} />
+                                    <Input defaultValue={repair.password} onBlur={(e) => handleSave('password', e.target.value, 'Contraseña actualizada.')} disabled={isLoading} />
                                 </div>
                             </CardContent>
                         </Card>
@@ -388,8 +495,48 @@ export default function RepairDetails({ initialRepair }: RepairDetailsProps) {
                     />
                 </DialogContent>
             </Dialog>
+
+             <Dialog open={quoteDialogOpen} onOpenChange={setQuoteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Añadir Pieza a la Cotización</DialogTitle>
+                    </DialogHeader>
+                    <Form {...partForm}>
+                        <form onSubmit={partForm.handleSubmit(onPartSubmit)} className="space-y-4">
+                            <FormField
+                                control={partForm.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Nombre de la Pieza</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Ej: Pantalla iPhone 14" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={partForm.control}
+                                name="price"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Precio</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="0.00" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <DialogFooter>
+                                <Button type="button" variant="ghost" onClick={() => setQuoteDialogOpen(false)}>Cancelar</Button>
+                                <Button type="submit">Añadir Pieza</Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
-
-    
