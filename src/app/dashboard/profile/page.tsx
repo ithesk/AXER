@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,7 @@ export default function BusinessProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -85,6 +86,24 @@ export default function BusinessProfilePage() {
     }
   };
 
+  const handleLogoButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log("Archivo seleccionado:", file.name);
+      // NOTE: Here you would typically upload the file to a storage service
+      // like Firebase Storage and then update the profile's logoUrl.
+      toast({
+        title: "Logo Seleccionado",
+        description: `${file.name} - La subida real no está implementada en este prototipo.`,
+      });
+    }
+  };
+
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[80vh]">
@@ -149,7 +168,17 @@ export default function BusinessProfilePage() {
                             <span>Logo</span>
                         </div>
                     )}
-                    <Button variant="outline"><Upload className="mr-2 h-4 w-4" /> Subir Logo</Button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                        accept="image/png, image/jpeg, image/svg+xml"
+                    />
+                    <Button variant="outline" onClick={handleLogoButtonClick}>
+                        <Upload className="mr-2 h-4 w-4" /> 
+                        Subir Logo
+                    </Button>
                 </div>
             </CardContent>
         </Card>
