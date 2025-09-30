@@ -16,7 +16,7 @@ import {
   DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu";
 import { placeholderImages } from "@/lib/placeholder-images";
-import { CreditCard, LogOut, Settings, User, Monitor, Moon, Sun, Loader2 } from "lucide-react";
+import { CreditCard, LogOut, Settings, User, Monitor, Moon, Sun, Loader2, Building } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "./auth-provider";
 import { auth } from "@/lib/firebase";
@@ -70,6 +70,10 @@ export function UserNav() {
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
             <span>Perfil</span>
+          </DropdownMenuItem>
+           <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
+            <Building className="mr-2 h-4 w-4" />
+            <span>Perfil de Empresa</span>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <CreditCard className="mr-2 h-4 w-4" />
