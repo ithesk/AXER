@@ -1,5 +1,8 @@
-import { db } from "@/lib/firebase";
+
+import { db, storage } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 export type BusinessTheme = {
     primary: string; // HSL value like "263 44% 56%"
@@ -52,4 +55,18 @@ export async function saveBusinessProfile(profile: BusinessProfile): Promise<voi
 
 export async function seedBusinessProfile() {
     await saveBusinessProfile(defaultBusinessProfile);
+}
+
+export async function uploadBusinessLogo(companyId: string, file: File): Promise<string> {
+    // Sanitize companyId to be a valid path segment
+    const safeCompanyId = companyId.replace(/[^a-zA-Z0-9]/g, '_');
+    const storageRef = ref(storage, `logos/${safeCompanyId}/logo`);
+
+    // Upload the file
+    const snapshot = await uploadBytes(storageRef, file);
+
+    // Get the download URL
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    return downloadURL;
 }

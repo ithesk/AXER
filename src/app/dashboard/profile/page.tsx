@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getBusinessProfile, saveBusinessProfile, BusinessProfile, seedBusinessProfile } from "@/services/business";
+import { getBusinessProfile, saveBusinessProfile, BusinessProfile, seedBusinessProfile, uploadBusinessLogo } from "@/services/business";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -16,6 +17,7 @@ export default function BusinessProfilePage() {
   const [profile, setProfile] = useState<BusinessProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -90,16 +92,32 @@ export default function BusinessProfilePage() {
     fileInputRef.current?.click();
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      console.log("Archivo seleccionado:", file.name);
-      // NOTE: Here you would typically upload the file to a storage service
-      // like Firebase Storage and then update the profile's logoUrl.
-      toast({
-        title: "Logo Seleccionado",
-        description: `${file.name} - La subida real no está implementada en este prototipo.`,
-      });
+    if (file && profile) {
+      setIsUploading(true);
+      try {
+        const newLogoUrl = await uploadBusinessLogo(profile.id, file);
+        
+        const updatedProfile = { ...profile, logoUrl: newLogoUrl };
+        await saveBusinessProfile(updatedProfile);
+        setProfile(updatedProfile);
+
+        toast({
+          title: "Logo Subido",
+          description: "El logo de la empresa ha sido actualizado.",
+        });
+
+      } catch (error) {
+        console.error("Error uploading logo:", error);
+        toast({
+            title: "Error de Subida",
+            description: "No se pudo subir el logo. Por favor, intente de nuevo.",
+            variant: "destructive",
+        });
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -174,10 +192,15 @@ export default function BusinessProfilePage() {
                         onChange={handleLogoUpload}
                         className="hidden"
                         accept="image/png, image/jpeg, image/svg+xml"
+                        disabled={isUploading}
                     />
-                    <Button variant="outline" onClick={handleLogoButtonClick}>
-                        <Upload className="mr-2 h-4 w-4" /> 
-                        Subir Logo
+                    <Button variant="outline" onClick={handleLogoButtonClick} disabled={isUploading}>
+                        {isUploading ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Upload className="mr-2 h-4 w-4" />
+                        )}
+                        {isUploading ? 'Subiendo...' : 'Subir Logo'}
                     </Button>
                 </div>
             </CardContent>
