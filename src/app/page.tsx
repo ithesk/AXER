@@ -51,10 +51,10 @@ export default function Home() {
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Button variant="ghost" asChild>
-            <Link href="/dashboard">Iniciar Sesión</Link>
+            <Link href="/login">Iniciar Sesión</Link>
           </Button>
           <Button asChild>
-            <Link href="/dashboard">Comenzar</Link>
+            <Link href="/signup">Comenzar</Link>
           </Button>
         </nav>
       </header>

@@ -16,29 +16,52 @@ import {
   DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu";
 import { placeholderImages } from "@/lib/placeholder-images";
-import { CreditCard, LogOut, Settings, User, Monitor, Moon, Sun } from "lucide-react";
+import { CreditCard, LogOut, Settings, User, Monitor, Moon, Sun, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useAuth } from "./auth-provider";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 export function UserNav() {
   const userAvatar = placeholderImages.find((p) => p.id === "user-avatar-1");
   const { setTheme } = useTheme();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
+
+  if (loading) {
+    return <Loader2 className="h-6 w-6 animate-spin" />;
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User Avatar" data-ai-hint={userAvatar.imageHint} />}
-            <AvatarFallback>JD</AvatarFallback>
+            {user.photoURL ? (
+              <AvatarImage src={user.photoURL} alt="User Avatar" />
+            ) : userAvatar && (
+              <AvatarImage src={userAvatar.imageUrl} alt="User Avatar" data-ai-hint={userAvatar.imageHint} />
+            )}
+            <AvatarFallback>{user.displayName?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">John Doe</p>
+            <p className="text-sm font-medium leading-none">{user.displayName || 'Usuario'}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              john.doe@example.com
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -82,7 +105,7 @@ export function UserNav() {
           </DropdownMenuPortal>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Cerrar Sesión</span>
         </DropdownMenuItem>
