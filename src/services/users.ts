@@ -1,3 +1,4 @@
+
 import { db } from "@/lib/firebase";
 import { collection, getDocs, doc, setDoc, writeBatch } from "firebase/firestore";
 
@@ -10,10 +11,11 @@ export type User = {
     role: UserRole;
     company: string;
     avatar: string;
+    isSuperAdmin?: boolean;
 };
 
 const usersData: Omit<User, 'id'>[] = [
-    { name: "Peter Jones", email: "peter.jones@email.com", role: "Gerente", company: "Acme Inc.", avatar: "https://picsum.photos/seed/avatar3/40/40" },
+    { name: "Peter Jones", email: "peter.jones@email.com", role: "Gerente", company: "Acme Inc.", avatar: "https://picsum.photos/seed/avatar3/40/40", isSuperAdmin: true },
     { name: "John Doe", email: "john.doe@email.com", role: "Asociado de Ventas", company: "Acme Inc.", avatar: "https://picsum.photos/seed/avatar1/40/40" },
     { name: "Jane Smith", email: "jane.smith@email.com", role: "Gerente", company: "Globex Corp.", avatar: "https://picsum.photos/seed/avatar2/40/40" },
     { name: "David Williams", email: "david.w@email.com", role: "Técnico", company: "Acme Inc.", avatar: "https://picsum.photos/seed/avatar4/40/40" },
