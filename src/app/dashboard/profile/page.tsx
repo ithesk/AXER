@@ -109,10 +109,10 @@ export default function BusinessProfilePage() {
         });
 
       } catch (error) {
-        console.error("Error uploading logo:", error);
+        console.error("Error detallado al subir el logo:", error);
         toast({
             title: "Error de Subida",
-            description: "No se pudo subir el logo. Por favor, intente de nuevo.",
+            description: "No se pudo subir el logo. Por favor, revise la consola para más detalles.",
             variant: "destructive",
         });
       } finally {
