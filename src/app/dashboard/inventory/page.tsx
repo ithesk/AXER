@@ -56,7 +56,7 @@ export default async function InventoryPage() {
             {inventory.map((item) => {
                const statusInfo = getStatusInfo(item.status);
               return (
-                <div key={item.id} className="grid grid-cols-5 gap-4 items-center px-4 py-3 border-b">
+                <div key={item.id} className="grid grid-cols-5 gap-4 items-center px-4 py-3 border-b hover:bg-muted/50 transition-colors cursor-pointer">
                    <div className="col-span-2 flex items-center gap-3">
                     <Avatar>
                       <AvatarFallback>{item.model.charAt(0)}</AvatarFallback>
