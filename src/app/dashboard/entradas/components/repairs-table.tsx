@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ListFilter, Search, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -12,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Repair, RepairStatus } from "@/services/repairs";
 import { useRouter } from "next/navigation";
 import { getStatusSettings, StatusSettings, BadgeVariant } from "@/services/settings";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 type ColumnVisibility = {
   id: boolean;
@@ -67,7 +67,6 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
     .filter(repair =>
       Object.values(repair).some(value => {
         if (typeof value === 'object' && value !== null) {
-            // Handle nested objects like 'quote'
             if ('total' in value) {
                 return String(value.total).toLowerCase().includes(searchTerm.toLowerCase());
             }
@@ -78,52 +77,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
     );
 
   const getBadgeVariant = (status: RepairStatus): BadgeVariant => {
-    // We can safely assert statusSettings is not null because we check for it before rendering the rows.
     return statusSettings![status] || 'outline';
-  };
-
-  const renderTableRows = () => {
-    if (!statusSettings) {
-       return (
-        <TableRow>
-          <TableCell colSpan={Object.values(columnVisibility).filter(Boolean).length} className="h-24 text-center">
-            Cargando configuración...
-          </TableCell>
-        </TableRow>
-      );
-    }
-
-    if (filteredRepairs.length === 0) {
-      return (
-        <TableRow>
-          <TableCell colSpan={Object.values(columnVisibility).filter(Boolean).length} className="h-24 text-center">
-            No se encontraron resultados.
-          </TableCell>
-        </TableRow>
-      );
-    }
-    return filteredRepairs.map((repair) => (
-      <TableRow 
-        key={repair.id} 
-        onClick={() => router.push(`/dashboard/entradas/${repair.id}`)}
-        className="cursor-pointer"
-      >
-        {columnVisibility.id && <TableCell className="font-medium">{repair.id}</TableCell>}
-        {columnVisibility.customer && <TableCell>{repair.customer}</TableCell>}
-        {columnVisibility.device && <TableCell>{repair.device}</TableCell>}
-        {columnVisibility.deviceType && <TableCell>{repair.deviceType}</TableCell>}
-        {columnVisibility.problemDescription && <TableCell className="truncate max-w-xs">{repair.problemDescription}</TableCell>}
-        {columnVisibility.technician && <TableCell>{repair.technician}</TableCell>}
-        {columnVisibility.entryDate && <TableCell>{repair.entryDate.split('T')[0]}</TableCell>}
-        {columnVisibility.imeiOrSn && <TableCell>{repair.imeiOrSn || 'N/A'}</TableCell>}
-        {columnVisibility.totalQuote && <TableCell className="text-right">${repair.quote?.total.toFixed(2) || '0.00'}</TableCell>}
-        {columnVisibility.status && <TableCell>
-          <Badge variant={getBadgeVariant(repair.status)}>
-            {repair.status}
-          </Badge>
-        </TableCell>}
-      </TableRow>
-    ));
   };
   
   return (
@@ -191,27 +145,55 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                   </DropdownMenu>
                 </div>
             </div>
+            
             <div className="border rounded-md mt-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {columnVisibility.id && <TableHead>ID</TableHead>}
-                    {columnVisibility.customer && <TableHead>Cliente</TableHead>}
-                    {columnVisibility.device && <TableHead>Equipo</TableHead>}
-                    {columnVisibility.deviceType && <TableHead>Tipo</TableHead>}
-                    {columnVisibility.problemDescription && <TableHead>Falla Reportada</TableHead>}
-                    {columnVisibility.technician && <TableHead>Técnico</TableHead>}
-                    {columnVisibility.entryDate && <TableHead>Ingreso</TableHead>}
-                    {columnVisibility.imeiOrSn && <TableHead>IMEI/SN</TableHead>}
-                    {columnVisibility.totalQuote && <TableHead className="text-right">Cotización</TableHead>}
-                    {columnVisibility.status && <TableHead>Estado</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {renderTableRows()}
-                </TableBody>
-              </Table>
+              {/* Header */}
+               <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground px-4 py-3 border-b">
+                  <div className="col-span-3">Cliente / Equipo</div>
+                  <div className="col-span-4">Falla Reportada</div>
+                  <div className="col-span-2">Técnico</div>
+                  <div className="col-span-1">Ingreso</div>
+                  <div className="col-span-2">Estado</div>
+               </div>
+               
+               {/* Body */}
+               <div>
+                {!statusSettings ? (
+                  <div className="text-center p-8 text-muted-foreground">Cargando configuración...</div>
+                ) : filteredRepairs.length === 0 ? (
+                   <div className="text-center p-8 text-muted-foreground">No se encontraron resultados.</div>
+                ) : (
+                  filteredRepairs.map((repair) => (
+                    <div 
+                      key={repair.id} 
+                      onClick={() => router.push(`/dashboard/entradas/${repair.id}`)}
+                      className="grid grid-cols-12 gap-4 items-center px-4 py-3 border-b hover:bg-muted/50 transition-colors cursor-pointer text-sm"
+                    >
+                      <div className="col-span-3 flex items-center gap-3">
+                        <Avatar>
+                          <AvatarFallback>{repair.customer.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{repair.customer}</p>
+                          <p className="text-xs text-muted-foreground">{repair.device}</p>
+                        </div>
+                      </div>
+
+                      <div className="col-span-4 text-muted-foreground truncate">{repair.problemDescription}</div>
+                      <div className="col-span-2 text-muted-foreground">{repair.technician}</div>
+                      <div className="col-span-1 text-muted-foreground">{repair.entryDate.split('T')[0]}</div>
+                      <div className="col-span-2">
+                        <Badge variant={getBadgeVariant(repair.status)}>
+                          {repair.status}
+                        </Badge>
+                      </div>
+
+                    </div>
+                  ))
+                )}
+               </div>
             </div>
+
           </Tabs>
         </div>
       </CardContent>
