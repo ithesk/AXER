@@ -7,20 +7,19 @@ import {
     Bell,
     Contact,
     Home,
-    LineChart,
-    Menu,
     Package,
     Settings,
     ShoppingCart,
     Users,
     Wrench,
-    ChevronDown
+    ChevronDown,
+    Building
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Badge } from "./ui/badge";
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarMenuBadge } from "@/components/ui/sidebar";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useAuth } from "./auth-provider";
 
 
 const navItems = [
@@ -30,13 +29,28 @@ const navItems = [
     { name: 'Clientes', href: '/dashboard/customers', icon: Contact },
     { name: 'Empleados', href: '/dashboard/employees', icon: Users },
     { name: 'Alertas', href: '/dashboard/alerts', icon: Bell, badge: 2, variant: 'destructive' as const },
-    { name: 'Configuración', href: '/dashboard/settings', icon: Settings },
 ];
 
 export function DashboardNav() {
     const pathname = usePathname();
     const { state } = useSidebar();
+    const { user, loading } = useAuth();
+
     const isEntradasPath = pathname.startsWith('/dashboard/entradas') || pathname.startsWith('/dashboard/equipos') || pathname.startsWith('/dashboard/problemas-comunes');
+    
+    const settingsLink = { 
+        name: 'Administración', 
+        href: '/dashboard/settings', 
+        icon: Settings,
+        isSuperAdminOnly: true,
+    };
+     const profileLink = {
+        name: 'Perfil de Empresa',
+        href: '/dashboard/profile',
+        icon: Building,
+        isSuperAdminOnly: false,
+    }
+
 
     return (
         <SidebarMenu>
@@ -145,6 +159,37 @@ export function DashboardNav() {
                     </SidebarMenuButton>
                  </SidebarMenuItem>
             ))}
+
+            {/* Conditional Settings/Admin link */}
+            {!loading && user && (
+                 <SidebarMenuItem>
+                    <SidebarMenuButton 
+                        asChild
+                        isActive={pathname === profileLink.href}
+                        tooltip={state === 'collapsed' ? profileLink.name : undefined}
+                    >
+                       <Link href={profileLink.href}>
+                            <profileLink.icon />
+                            <span>{profileLink.name}</span>
+                       </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            )}
+
+            {!loading && user?.isSuperAdmin && (
+                 <SidebarMenuItem>
+                    <SidebarMenuButton 
+                        asChild
+                        isActive={pathname === settingsLink.href}
+                        tooltip={state === 'collapsed' ? settingsLink.name : undefined}
+                    >
+                       <Link href={settingsLink.href}>
+                            <settingsLink.icon />
+                            <span>{settingsLink.name}</span>
+                       </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            )}
         </SidebarMenu>
     );
 }

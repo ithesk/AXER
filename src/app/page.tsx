@@ -43,7 +43,7 @@ export default function Home() {
   const heroImage = placeholderImages.find(p => p.id === "hero-phones");
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       <header className="px-4 lg:px-6 h-16 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <Link href="#" className="flex items-center justify-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary"><path d="M4 17a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4Z"/><path d="M12 7V5"/><path d="M7 7V5"/><path d="M17 7V5"/></svg>
@@ -59,18 +59,18 @@ export default function Home() {
         </nav>
       </header>
       <main className="flex-1">
-        <section className="relative w-full py-20 md:py-32 lg:py-40" style={{background: "hsl(214, 65%, 50%)"}}>
-            <div className="container px-4 md:px-6 text-center text-primary-foreground">
+        <section className="relative w-full py-20 md:py-32 lg:py-40 bg-primary/10">
+            <div className="container px-4 md:px-6 text-center text-foreground">
                 <div className="space-y-4">
-                    <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl font-headline">
+                    <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl font-headline text-primary">
                         El futuro de la gestión de tiendas de telefonía
                     </h1>
-                    <p className="mx-auto max-w-[700px] text-lg md:text-xl">
+                    <p className="mx-auto max-w-[700px] text-lg md:text-xl text-muted-foreground">
                         AXER es su solución todo en uno para inventario, ventas, empleados y relaciones con los clientes, impulsada por IA.
                     </p>
                 </div>
                 <div className="mt-8">
-                    <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button size="lg" asChild>
                         <Link href="/dashboard">
                             Explorar el Panel
                         </Link>
@@ -83,7 +83,7 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Características Principales</div>
+                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm text-primary font-medium">Características Principales</div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Todo lo que necesitas para triunfar</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   Nuestra plataforma proporciona un conjunto completo de herramientas para optimizar sus operaciones e impulsar el crecimiento.
@@ -92,7 +92,7 @@ export default function Home() {
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:max-w-none lg:grid-cols-3 pt-12">
               {features.map((feature) => (
-                <Card key={feature.title} className="hover:shadow-lg transition-shadow">
+                <Card key={feature.title} className="hover:shadow-lg transition-shadow border-muted hover:border-primary/50">
                   <CardHeader className="flex flex-row items-center gap-4">
                     <div className="bg-primary/10 p-3 rounded-full">
                       <feature.icon className="h-6 w-6 text-primary" />
