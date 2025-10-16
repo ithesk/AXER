@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Repair, RepairStatus } from "@/services/repairs";
 import { useRouter } from "next/navigation";
-import { getStatusSettings, BadgeVariant } from "@/services/settings";
+import { getStatusSettings, type StatusSettings, type BadgeVariant } from "@/services/settings";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 type ColumnVisibility = {
@@ -66,16 +66,12 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
     .filter(repair => activeTab === "Todas" || repair.status === activeTab)
     .filter(repair => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        // Search across multiple relevant fields
         return (
             (repair.id?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
             (repair.customer?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
             (repair.device?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
             (repair.technician?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
-            (repair.problemDescription?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
-            (repair.status?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
-            (repair.deviceType?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
-            (repair.imeiOrSn?.toLowerCase() || '').includes(lowerCaseSearchTerm)
+            (repair.problemDescription?.toLowerCase() || '').includes(lowerCaseSearchTerm)
         );
     });
 
@@ -122,7 +118,6 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                       <DropdownMenuSeparator />
                       {Object.keys(columnVisibility).map((key) => {
                         const colKey = key as keyof ColumnVisibility;
-                        // Simple way to format labels
                         const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
                          return (
                           <DropdownMenuCheckboxItem 
@@ -130,7 +125,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                             checked={columnVisibility[colKey]} 
                             onCheckedChange={() => toggleColumn(colKey)}
                           >
-                            {label === "Id" ? "ID" : label === "Imei Or Sn" ? "IMEI/SN" : label}
+                            {label === "Id" ? "ID" : label === "Imei Or Sn" ? "IMEI/SN" : label === 'Total Quote' ? 'Cotización' : label}
                           </DropdownMenuCheckboxItem>
                          )
                       })}
@@ -140,16 +135,6 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
             </div>
             
             <div className="border rounded-md mt-4">
-               {/* Header (optional, for context) */}
-               <div className="hidden lg:grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground px-4 py-3 border-b">
-                  {columnVisibility.customer && <div className="col-span-3">Cliente / Equipo</div>}
-                  {columnVisibility.problemDescription && <div className="col-span-3">Falla Reportada</div>}
-                  {columnVisibility.technician && <div className="col-span-2">Técnico</div>}
-                  {columnVisibility.entryDate && <div className="col-span-2">Ingreso</div>}
-                  {columnVisibility.status && <div className="col-span-2 text-right">Estado</div>}
-               </div>
-               
-               {/* Body */}
                <div>
                 {!statusSettings ? (
                   <div className="text-center p-8 text-muted-foreground">Cargando configuración...</div>
@@ -162,43 +147,38 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                       onClick={() => router.push(`/dashboard/entradas/${repair.id}`)}
                       className="items-start px-4 py-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer text-sm"
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2">
-
-                        {/* Customer & Device */}
-                        {columnVisibility.customer && (
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2 items-center">
+                        
+                        {(columnVisibility.customer || columnVisibility.device) && (
                           <div className="md:col-span-3 flex items-center gap-3">
                             <Avatar className="hidden sm:flex h-8 w-8">
                               <AvatarFallback>{repair.customer.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium text-foreground">{repair.customer}</p>
-                              {columnVisibility.device && <p className="text-xs text-muted-foreground">{repair.device}</p>}
+                                {columnVisibility.customer && <p className="font-medium text-foreground">{repair.customer}</p>}
+                                {columnVisibility.device && <p className="text-xs text-muted-foreground">{repair.device}</p>}
                             </div>
                           </div>
                         )}
 
-                        {/* Problem Description */}
                         {columnVisibility.problemDescription && (
                           <div className="md:col-span-3 text-muted-foreground truncate self-center">
                             {repair.problemDescription}
                           </div>
                         )}
 
-                        {/* Technician */}
                         {columnVisibility.technician && (
                           <div className="md:col-span-2 text-muted-foreground self-center">
                             {repair.technician}
                           </div>
                         )}
 
-                        {/* Entry Date */}
                         {columnVisibility.entryDate && (
                           <div className="md:col-span-2 text-muted-foreground self-center">
                             {new Date(repair.entryDate).toLocaleDateString()}
                           </div>
                         )}
 
-                        {/* Status */}
                         {columnVisibility.status && (
                           <div className="md:col-span-2 self-center md:text-right">
                             <Badge variant={getBadgeVariant(repair.status)}>
@@ -207,21 +187,22 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                           </div>
                         )}
                         
-                        {/* Other optional columns */}
-                         <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs mt-2 pt-2 border-t border-dashed md:border-t-0 md:pt-0 md:mt-0">
-                            {columnVisibility.id && (
-                                <div className="text-muted-foreground"><span className="font-medium text-foreground">ID:</span> {repair.id}</div>
-                            )}
-                            {columnVisibility.deviceType && (
-                                <div className="text-muted-foreground"><span className="font-medium text-foreground">Tipo:</span> {repair.deviceType}</div>
-                            )}
-                             {columnVisibility.imeiOrSn && repair.imeiOrSn && (
-                                <div className="text-muted-foreground"><span className="font-medium text-foreground">IMEI/SN:</span> {repair.imeiOrSn}</div>
-                            )}
-                             {columnVisibility.totalQuote && repair.quote && (
-                                <div className="text-muted-foreground"><span className="font-medium text-foreground">Cotización:</span> ${repair.quote.total.toFixed(2)}</div>
-                            )}
-                        </div>
+                        {(columnVisibility.id || columnVisibility.deviceType || columnVisibility.imeiOrSn || columnVisibility.totalQuote) && (
+                          <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs mt-2 pt-2 border-t border-dashed">
+                              {columnVisibility.id && (
+                                  <div className="text-muted-foreground"><span className="font-medium text-foreground/80">ID:</span> {repair.id}</div>
+                              )}
+                              {columnVisibility.deviceType && (
+                                  <div className="text-muted-foreground"><span className="font-medium text-foreground/80">Tipo:</span> {repair.deviceType}</div>
+                              )}
+                              {columnVisibility.imeiOrSn && repair.imeiOrSn && (
+                                  <div className="text-muted-foreground"><span className="font-medium text-foreground/80">IMEI/SN:</span> {repair.imeiOrSn}</div>
+                              )}
+                              {columnVisibility.totalQuote && repair.quote && (
+                                  <div className="text-muted-foreground"><span className="font-medium text-foreground/80">Cotización:</span> ${repair.quote.total.toFixed(2)}</div>
+                              )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))
