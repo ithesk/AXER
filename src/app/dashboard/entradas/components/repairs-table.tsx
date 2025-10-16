@@ -65,7 +65,8 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
   const filteredRepairs = (initialRepairs || [])
     .filter(repair => activeTab === "Todas" || repair.status === activeTab)
     .filter(repair =>
-      Object.values(repair).some(value => {
+      Object.entries(repair).some(([key, value]) => {
+        if (!columnVisibility[key as keyof ColumnVisibility] && key !== 'id') return false; // Solo busca en columnas visibles
         if (typeof value === 'object' && value !== null) {
             if ('total' in value) {
                 return String(value.total).toLowerCase().includes(searchTerm.toLowerCase());
@@ -77,7 +78,8 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
     );
 
   const getBadgeVariant = (status: RepairStatus): BadgeVariant => {
-    return statusSettings![status] || 'outline';
+    if (!statusSettings) return 'outline';
+    return statusSettings[status] || 'outline';
   };
   
   return (
@@ -100,7 +102,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <TabsList>
+                  <TabsList className="overflow-x-auto">
                       <TabsTrigger key="Todas" value="Todas">Todas</TabsTrigger>
                       {statusFilters.map(status => (
                         <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
@@ -108,47 +110,36 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                   </TabsList>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-9 flex">
+                      <Button variant="outline" size="sm" className="h-9 flex-shrink-0">
                         <ListFilter className="mr-2 h-4 w-4" />
                         Vista
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="w-[200px]">
                       <DropdownMenuLabel>Mostrar/Ocultar Columnas</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuCheckboxItem checked={columnVisibility.id} onCheckedChange={() => toggleColumn('id')}>ID de Reparación</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={columnVisibility.customer} onCheckedChange={() => toggleColumn('customer')}>Cliente</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={columnVisibility.device} onCheckedChange={() => toggleColumn('device')}>Equipo</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={columnVisibility.deviceType} onCheckedChange={() => toggleColumn('deviceType')}>Tipo de Equipo</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={columnVisibility.problemDescription} onCheckedChange={() => toggleColumn('problemDescription')}>Falla Reportada</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={columnVisibility.technician} onCheckedChange={() => toggleColumn('technician')}>Técnico Asignado</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={columnVisibility.entryDate} onCheckedChange={() => toggleColumn('entryDate')}>Fecha de Ingreso</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={columnVisibility.imeiOrSn} onCheckedChange={() => toggleColumn('imeiOrSn')}>IMEI/SN</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={columnVisibility.totalQuote} onCheckedChange={() => toggleColumn('totalQuote')}>Total Cotizado</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={columnVisibility.status} onCheckedChange={() => toggleColumn('status')}>Estado</DropdownMenuCheckboxItem>
+                      {Object.keys(columnVisibility).map((key) => {
+                        const colKey = key as keyof ColumnVisibility;
+                        // Simple way to format labels
+                        const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+                         return (
+                          <DropdownMenuCheckboxItem 
+                            key={key}
+                            checked={columnVisibility[colKey]} 
+                            onCheckedChange={() => toggleColumn(colKey)}
+                          >
+                            {label}
+                          </DropdownMenuCheckboxItem>
+                         )
+                      })}
                     </DropdownMenuContent>
-                  </DropdownMenu>
-                  <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="icon" className="h-9 w-9">
-                              <Settings className="h-4 w-4" />
-                              <span className="sr-only">Configuración</span>
-                          </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Configuración del Módulo</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>Ajustes de Notificaciones</DropdownMenuItem>
-                          <DropdownMenuItem>Estados Personalizados</DropdownMenuItem>
-                          <DropdownMenuItem>Técnicos</DropdownMenuItem>
-                      </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
             </div>
             
             <div className="border rounded-md mt-4">
-              {/* Header */}
-               <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground px-4 py-3 border-b">
+               {/* Header (optional, for context) */}
+               <div className="hidden lg:grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground px-4 py-3 border-b">
                   <div className="col-span-3">Cliente / Equipo</div>
                   <div className="col-span-4">Falla Reportada</div>
                   <div className="col-span-2">Técnico</div>
@@ -167,27 +158,69 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                     <div 
                       key={repair.id} 
                       onClick={() => router.push(`/dashboard/entradas/${repair.id}`)}
-                      className="grid grid-cols-12 gap-4 items-center px-4 py-3 border-b hover:bg-muted/50 transition-colors cursor-pointer text-sm"
+                      className="items-center px-4 py-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer text-sm"
                     >
-                      <div className="col-span-3 flex items-center gap-3">
-                        <Avatar>
-                          <AvatarFallback>{repair.customer.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{repair.customer}</p>
-                          <p className="text-xs text-muted-foreground">{repair.device}</p>
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2">
+
+                        {/* Customer & Device */}
+                        {columnVisibility.customer && columnVisibility.device && (
+                          <div className="md:col-span-3 flex items-center gap-3">
+                            <Avatar className="hidden sm:flex">
+                              <AvatarFallback>{repair.customer.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-foreground">{repair.customer}</p>
+                              <p className="text-xs text-muted-foreground">{repair.device}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Problem Description */}
+                        {columnVisibility.problemDescription && (
+                          <div className="md:col-span-4 text-muted-foreground truncate self-center">
+                            {repair.problemDescription}
+                          </div>
+                        )}
+
+                        {/* Technician */}
+                        {columnVisibility.technician && (
+                          <div className="md:col-span-2 text-muted-foreground self-center">
+                            {repair.technician}
+                          </div>
+                        )}
+
+                        {/* Entry Date */}
+                        {columnVisibility.entryDate && (
+                          <div className="md:col-span-1 text-muted-foreground self-center">
+                            {new Date(repair.entryDate).toLocaleDateString()}
+                          </div>
+                        )}
+
+                        {/* Status */}
+                        {columnVisibility.status && (
+                          <div className="md:col-span-2 self-center">
+                            <Badge variant={getBadgeVariant(repair.status)}>
+                              {repair.status}
+                            </Badge>
+                          </div>
+                        )}
+                        
+                        {/* Other optional columns, shown below main row on small screens */}
+                         <div className="col-span-full grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1 text-xs mt-2 pt-2 border-t border-dashed md:hidden">
+                            {columnVisibility.id && (
+                                <div><span className="font-medium">ID:</span> {repair.id}</div>
+                            )}
+                            {columnVisibility.deviceType && (
+                                <div><span className="font-medium">Tipo:</span> {repair.deviceType}</div>
+                            )}
+                             {columnVisibility.imeiOrSn && (
+                                <div><span className="font-medium">IMEI/SN:</span> {repair.imeiOrSn}</div>
+                            )}
+                             {columnVisibility.totalQuote && repair.quote && (
+                                <div><span className="font-medium">Cotización:</span> ${repair.quote.total.toFixed(2)}</div>
+                            )}
                         </div>
                       </div>
-
-                      <div className="col-span-4 text-muted-foreground truncate">{repair.problemDescription}</div>
-                      <div className="col-span-2 text-muted-foreground">{repair.technician}</div>
-                      <div className="col-span-1 text-muted-foreground">{repair.entryDate.split('T')[0]}</div>
-                      <div className="col-span-2">
-                        <Badge variant={getBadgeVariant(repair.status)}>
-                          {repair.status}
-                        </Badge>
-                      </div>
-
                     </div>
                   ))
                 )}
