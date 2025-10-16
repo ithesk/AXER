@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Repair, RepairStatus } from "@/services/repairs";
 import { useRouter } from "next/navigation";
 import { getStatusSettings, type StatusSettings } from "@/services/settings";
@@ -85,7 +86,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
   const getInitials = (name: string) => {
     if (!name) return '';
     const parts = name.split(' ');
-    if (parts.length > 1) {
+    if (parts.length > 1 && parts[0] && parts[1]) {
       return parts[0][0] + parts[1][0];
     }
     return name.substring(0, 2);
@@ -146,79 +147,73 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
             </div>
             
             <div className="border rounded-md mt-4">
-              <div>
-                {!statusSettings ? (
+               {!statusSettings ? (
                   <div className="text-center p-8 text-muted-foreground">Cargando configuración...</div>
                 ) : filteredRepairs.length === 0 ? (
                    <div className="text-center p-8 text-muted-foreground">No se encontraron resultados.</div>
                 ) : (
-                  <div className="divide-y divide-border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {columnVisibility.customer && <TableHead>Cliente</TableHead>}
+                      {columnVisibility.device && <TableHead>Equipo</TableHead>}
+                      {columnVisibility.problemDescription && <TableHead>Problema</TableHead>}
+                      {columnVisibility.technician && <TableHead>Técnico</TableHead>}
+                      {columnVisibility.status && <TableHead>Estado</TableHead>}
+                      {columnVisibility.entryDate && <TableHead className="text-right">Fecha Ingreso</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {filteredRepairs.map((repair) => (
-                      <div 
+                      <TableRow 
                         key={repair.id} 
                         onClick={() => router.push(`/dashboard/entradas/${repair.id}`)}
-                        className="grid grid-cols-12 gap-x-4 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer text-sm"
+                        className="cursor-pointer"
                       >
                         {columnVisibility.customer && (
-                          <div className="col-span-12 sm:col-span-3 flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback>{getInitials(repair.customer)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                               <p className="font-medium text-foreground">{repair.customer}</p>
-                               {columnVisibility.id && <p className="text-xs text-muted-foreground">{repair.id}</p>}
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback>{getInitials(repair.customer)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                 <p className="font-medium text-foreground">{repair.customer}</p>
+                                 {columnVisibility.id && <p className="text-xs text-muted-foreground">{repair.id}</p>}
+                              </div>
                             </div>
-                          </div>
+                          </TableCell>
                         )}
-
                         {columnVisibility.device && (
-                          <div className="col-span-6 sm:col-span-2 flex flex-col justify-center">
-                            <p className="font-medium text-foreground">{repair.device}</p>
-                            {columnVisibility.deviceType && <p className="text-xs text-muted-foreground">{repair.deviceType}</p>}
-                          </div>
+                           <TableCell>
+                             <div className="flex flex-col">
+                                <span className="font-medium text-foreground">{repair.device}</span>
+                                {columnVisibility.deviceType && <span className="text-xs text-muted-foreground">{repair.deviceType}</span>}
+                             </div>
+                           </TableCell>
                         )}
-                        
-                        {columnVisibility.problemDescription && (
-                          <div className="col-span-12 sm:col-span-3 text-muted-foreground self-center truncate">
-                            {repair.problemDescription}
-                          </div>
+                         {columnVisibility.problemDescription && (
+                          <TableCell className="text-muted-foreground truncate max-w-xs">{repair.problemDescription}</TableCell>
                         )}
-                        
-                        {columnVisibility.technician && (
-                           <div className="col-span-6 sm:col-span-2 text-muted-foreground self-center">
-                            {repair.technician}
-                          </div>
+                         {columnVisibility.technician && (
+                          <TableCell className="text-muted-foreground">{repair.technician}</TableCell>
                         )}
-
-                        <div className="col-span-6 sm:col-span-2 flex flex-col justify-center sm:items-end">
-                            {columnVisibility.status && (
-                              <Badge variant={getBadgeVariant(repair.status)} className="mb-1">
-                                {repair.status}
-                              </Badge>
-                            )}
-                             {columnVisibility.entryDate && (
-                               <p className="text-xs text-muted-foreground">
-                                {new Date(repair.entryDate).toLocaleDateString()}
-                              </p>
-                            )}
-                        </div>
-
-                         {(columnVisibility.imeiOrSn || columnVisibility.totalQuote) && (
-                          <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs mt-2 pt-2 border-t border-dashed">
-                              {columnVisibility.imeiOrSn && repair.imeiOrSn && (
-                                  <div className="text-muted-foreground"><span className="font-medium text-foreground/80">IMEI/SN:</span> {repair.imeiOrSn}</div>
-                              )}
-                              {columnVisibility.totalQuote && repair.quote && (
-                                  <div className="text-muted-foreground"><span className="font-medium text-foreground/80">Cotización:</span> ${repair.quote.total.toFixed(2)}</div>
-                              )}
-                          </div>
+                         {columnVisibility.status && (
+                          <TableCell>
+                            <Badge variant={getBadgeVariant(repair.status)} className="capitalize">
+                              {repair.status}
+                            </Badge>
+                          </TableCell>
                         )}
-
-                      </div>
+                         {columnVisibility.entryDate && (
+                          <TableCell className="text-right text-muted-foreground">
+                            {new Date(repair.entryDate).toLocaleDateString()}
+                          </TableCell>
+                        )}
+                      </TableRow>
                     ))}
-                  </div>
+                  </TableBody>
+                </Table>
                 )}
-               </div>
             </div>
 
           </Tabs>
