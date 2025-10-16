@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { ListFilter, Search, Settings } from "lucide-react";
+import { ListFilter, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Repair, RepairStatus } from "@/services/repairs";
 import { useRouter } from "next/navigation";
-import { getStatusSettings, StatusSettings, BadgeVariant } from "@/services/settings";
+import { getStatusSettings, BadgeVariant } from "@/services/settings";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 type ColumnVisibility = {
@@ -64,18 +64,20 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
 
   const filteredRepairs = (initialRepairs || [])
     .filter(repair => activeTab === "Todas" || repair.status === activeTab)
-    .filter(repair =>
-      Object.entries(repair).some(([key, value]) => {
-        if (!columnVisibility[key as keyof ColumnVisibility] && key !== 'id') return false; // Solo busca en columnas visibles
-        if (typeof value === 'object' && value !== null) {
-            if ('total' in value) {
-                return String(value.total).toLowerCase().includes(searchTerm.toLowerCase());
-            }
-            return false;
-        }
-        return String(value).toLowerCase().includes(searchTerm.toLowerCase());
-      })
-    );
+    .filter(repair => {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        // Search across multiple relevant fields
+        return (
+            (repair.id?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
+            (repair.customer?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
+            (repair.device?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
+            (repair.technician?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
+            (repair.problemDescription?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
+            (repair.status?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
+            (repair.deviceType?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
+            (repair.imeiOrSn?.toLowerCase() || '').includes(lowerCaseSearchTerm)
+        );
+    });
 
   const getBadgeVariant = (status: RepairStatus): BadgeVariant => {
     if (!statusSettings) return 'outline';
@@ -128,7 +130,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                             checked={columnVisibility[colKey]} 
                             onCheckedChange={() => toggleColumn(colKey)}
                           >
-                            {label}
+                            {label === "Id" ? "ID" : label === "Imei Or Sn" ? "IMEI/SN" : label}
                           </DropdownMenuCheckboxItem>
                          )
                       })}
@@ -140,11 +142,11 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
             <div className="border rounded-md mt-4">
                {/* Header (optional, for context) */}
                <div className="hidden lg:grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground px-4 py-3 border-b">
-                  <div className="col-span-3">Cliente / Equipo</div>
-                  <div className="col-span-4">Falla Reportada</div>
-                  <div className="col-span-2">Técnico</div>
-                  <div className="col-span-1">Ingreso</div>
-                  <div className="col-span-2">Estado</div>
+                  {columnVisibility.customer && <div className="col-span-3">Cliente / Equipo</div>}
+                  {columnVisibility.problemDescription && <div className="col-span-3">Falla Reportada</div>}
+                  {columnVisibility.technician && <div className="col-span-2">Técnico</div>}
+                  {columnVisibility.entryDate && <div className="col-span-2">Ingreso</div>}
+                  {columnVisibility.status && <div className="col-span-2 text-right">Estado</div>}
                </div>
                
                {/* Body */}
@@ -158,26 +160,26 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                     <div 
                       key={repair.id} 
                       onClick={() => router.push(`/dashboard/entradas/${repair.id}`)}
-                      className="items-center px-4 py-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer text-sm"
+                      className="items-start px-4 py-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer text-sm"
                     >
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2">
 
                         {/* Customer & Device */}
-                        {columnVisibility.customer && columnVisibility.device && (
+                        {columnVisibility.customer && (
                           <div className="md:col-span-3 flex items-center gap-3">
-                            <Avatar className="hidden sm:flex">
+                            <Avatar className="hidden sm:flex h-8 w-8">
                               <AvatarFallback>{repair.customer.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div>
                               <p className="font-medium text-foreground">{repair.customer}</p>
-                              <p className="text-xs text-muted-foreground">{repair.device}</p>
+                              {columnVisibility.device && <p className="text-xs text-muted-foreground">{repair.device}</p>}
                             </div>
                           </div>
                         )}
 
                         {/* Problem Description */}
                         {columnVisibility.problemDescription && (
-                          <div className="md:col-span-4 text-muted-foreground truncate self-center">
+                          <div className="md:col-span-3 text-muted-foreground truncate self-center">
                             {repair.problemDescription}
                           </div>
                         )}
@@ -191,33 +193,33 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
 
                         {/* Entry Date */}
                         {columnVisibility.entryDate && (
-                          <div className="md:col-span-1 text-muted-foreground self-center">
+                          <div className="md:col-span-2 text-muted-foreground self-center">
                             {new Date(repair.entryDate).toLocaleDateString()}
                           </div>
                         )}
 
                         {/* Status */}
                         {columnVisibility.status && (
-                          <div className="md:col-span-2 self-center">
+                          <div className="md:col-span-2 self-center md:text-right">
                             <Badge variant={getBadgeVariant(repair.status)}>
                               {repair.status}
                             </Badge>
                           </div>
                         )}
                         
-                        {/* Other optional columns, shown below main row on small screens */}
-                         <div className="col-span-full grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1 text-xs mt-2 pt-2 border-t border-dashed md:hidden">
+                        {/* Other optional columns */}
+                         <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs mt-2 pt-2 border-t border-dashed md:border-t-0 md:pt-0 md:mt-0">
                             {columnVisibility.id && (
-                                <div><span className="font-medium">ID:</span> {repair.id}</div>
+                                <div className="text-muted-foreground"><span className="font-medium text-foreground">ID:</span> {repair.id}</div>
                             )}
                             {columnVisibility.deviceType && (
-                                <div><span className="font-medium">Tipo:</span> {repair.deviceType}</div>
+                                <div className="text-muted-foreground"><span className="font-medium text-foreground">Tipo:</span> {repair.deviceType}</div>
                             )}
-                             {columnVisibility.imeiOrSn && (
-                                <div><span className="font-medium">IMEI/SN:</span> {repair.imeiOrSn}</div>
+                             {columnVisibility.imeiOrSn && repair.imeiOrSn && (
+                                <div className="text-muted-foreground"><span className="font-medium text-foreground">IMEI/SN:</span> {repair.imeiOrSn}</div>
                             )}
                              {columnVisibility.totalQuote && repair.quote && (
-                                <div><span className="font-medium">Cotización:</span> ${repair.quote.total.toFixed(2)}</div>
+                                <div className="text-muted-foreground"><span className="font-medium text-foreground">Cotización:</span> ${repair.quote.total.toFixed(2)}</div>
                             )}
                         </div>
                       </div>
