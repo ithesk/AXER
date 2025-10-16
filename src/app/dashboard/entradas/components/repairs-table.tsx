@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Repair, RepairStatus } from "@/services/repairs";
 import { useRouter } from "next/navigation";
-import { getStatusSettings, type StatusSettings, type BadgeVariant } from "@/services/settings";
+import { getStatusSettings, type StatusSettings } from "@/services/settings";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import type { BadgeVariant } from "@/components/ui/badge";
 
 type ColumnVisibility = {
   id: boolean;
@@ -66,6 +67,7 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
     .filter(repair => activeTab === "Todas" || repair.status === activeTab)
     .filter(repair => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        // Search in the most relevant fields regardless of visibility
         return (
             (repair.id?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
             (repair.customer?.toLowerCase() || '').includes(lowerCaseSearchTerm) ||
@@ -79,6 +81,15 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
     if (!statusSettings) return 'outline';
     return statusSettings[status] || 'outline';
   };
+  
+  const getInitials = (name: string) => {
+    if (!name) return '';
+    const parts = name.split(' ');
+    if (parts.length > 1) {
+      return parts[0][0] + parts[1][0];
+    }
+    return name.substring(0, 2);
+  }
   
   return (
     <Card>
@@ -135,66 +146,65 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
             </div>
             
             <div className="border rounded-md mt-4">
-               <div>
+              <div>
                 {!statusSettings ? (
                   <div className="text-center p-8 text-muted-foreground">Cargando configuración...</div>
                 ) : filteredRepairs.length === 0 ? (
                    <div className="text-center p-8 text-muted-foreground">No se encontraron resultados.</div>
                 ) : (
-                  filteredRepairs.map((repair) => (
-                    <div 
-                      key={repair.id} 
-                      onClick={() => router.push(`/dashboard/entradas/${repair.id}`)}
-                      className="items-start px-4 py-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer text-sm"
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2 items-center">
-                        
-                        {(columnVisibility.customer || columnVisibility.device) && (
-                          <div className="md:col-span-3 flex items-center gap-3">
-                            <Avatar className="hidden sm:flex h-8 w-8">
-                              <AvatarFallback>{repair.customer.charAt(0)}</AvatarFallback>
+                  <div className="divide-y divide-border">
+                    {filteredRepairs.map((repair) => (
+                      <div 
+                        key={repair.id} 
+                        onClick={() => router.push(`/dashboard/entradas/${repair.id}`)}
+                        className="grid grid-cols-12 gap-x-4 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer text-sm"
+                      >
+                        {columnVisibility.customer && (
+                          <div className="col-span-12 sm:col-span-3 flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback>{getInitials(repair.customer)}</AvatarFallback>
                             </Avatar>
                             <div>
-                                {columnVisibility.customer && <p className="font-medium text-foreground">{repair.customer}</p>}
-                                {columnVisibility.device && <p className="text-xs text-muted-foreground">{repair.device}</p>}
+                               <p className="font-medium text-foreground">{repair.customer}</p>
+                               {columnVisibility.id && <p className="text-xs text-muted-foreground">{repair.id}</p>}
                             </div>
                           </div>
                         )}
 
+                        {columnVisibility.device && (
+                          <div className="col-span-6 sm:col-span-2 flex flex-col justify-center">
+                            <p className="font-medium text-foreground">{repair.device}</p>
+                            {columnVisibility.deviceType && <p className="text-xs text-muted-foreground">{repair.deviceType}</p>}
+                          </div>
+                        )}
+                        
                         {columnVisibility.problemDescription && (
-                          <div className="md:col-span-3 text-muted-foreground truncate self-center">
+                          <div className="col-span-12 sm:col-span-3 text-muted-foreground self-center truncate">
                             {repair.problemDescription}
                           </div>
                         )}
-
+                        
                         {columnVisibility.technician && (
-                          <div className="md:col-span-2 text-muted-foreground self-center">
+                           <div className="col-span-6 sm:col-span-2 text-muted-foreground self-center">
                             {repair.technician}
                           </div>
                         )}
 
-                        {columnVisibility.entryDate && (
-                          <div className="md:col-span-2 text-muted-foreground self-center">
-                            {new Date(repair.entryDate).toLocaleDateString()}
-                          </div>
-                        )}
+                        <div className="col-span-6 sm:col-span-2 flex flex-col justify-center sm:items-end">
+                            {columnVisibility.status && (
+                              <Badge variant={getBadgeVariant(repair.status)} className="mb-1">
+                                {repair.status}
+                              </Badge>
+                            )}
+                             {columnVisibility.entryDate && (
+                               <p className="text-xs text-muted-foreground">
+                                {new Date(repair.entryDate).toLocaleDateString()}
+                              </p>
+                            )}
+                        </div>
 
-                        {columnVisibility.status && (
-                          <div className="md:col-span-2 self-center md:text-right">
-                            <Badge variant={getBadgeVariant(repair.status)}>
-                              {repair.status}
-                            </Badge>
-                          </div>
-                        )}
-                        
-                        {(columnVisibility.id || columnVisibility.deviceType || columnVisibility.imeiOrSn || columnVisibility.totalQuote) && (
+                         {(columnVisibility.imeiOrSn || columnVisibility.totalQuote) && (
                           <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs mt-2 pt-2 border-t border-dashed">
-                              {columnVisibility.id && (
-                                  <div className="text-muted-foreground"><span className="font-medium text-foreground/80">ID:</span> {repair.id}</div>
-                              )}
-                              {columnVisibility.deviceType && (
-                                  <div className="text-muted-foreground"><span className="font-medium text-foreground/80">Tipo:</span> {repair.deviceType}</div>
-                              )}
                               {columnVisibility.imeiOrSn && repair.imeiOrSn && (
                                   <div className="text-muted-foreground"><span className="font-medium text-foreground/80">IMEI/SN:</span> {repair.imeiOrSn}</div>
                               )}
@@ -203,9 +213,10 @@ export default function RepairsTable({ repairs: initialRepairs }: RepairsTablePr
                               )}
                           </div>
                         )}
+
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
                </div>
             </div>
